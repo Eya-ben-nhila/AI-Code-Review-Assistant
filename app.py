@@ -23,12 +23,28 @@ def generate_plan():
     import random
     
     try:
-        # Get form data
-        learning_goal = request.form.get('learning_goal')
-        current_level = request.form.get('current_level')
-        time_constraint = request.form.get('time_constraint')
-        available_hours = float(request.form.get('available_hours'))
-        deadline_weeks = int(request.form.get('deadline_weeks'))
+        # Get form data with validation
+        learning_goal = request.form.get('learning_goal', '').strip()
+        current_level = request.form.get('current_level', '').strip()
+        time_constraint = request.form.get('time_constraint', '').strip()
+        available_hours_str = request.form.get('available_hours', '').strip()
+        deadline_weeks_str = request.form.get('deadline_weeks', '').strip()
+        
+        # Validate required fields
+        if not learning_goal or not current_level or not time_constraint or not available_hours_str or not deadline_weeks_str:
+            return jsonify({
+                "success": False,
+                "error": "All fields are required. Please fill in all form fields."
+            })
+        
+        try:
+            available_hours = float(available_hours_str)
+            deadline_weeks = int(deadline_weeks_str)
+        except ValueError:
+            return jsonify({
+                "success": False,
+                "error": "Available hours must be a number and deadline must be a whole number."
+            })
         
         # Create user profile
         user_profile = {
