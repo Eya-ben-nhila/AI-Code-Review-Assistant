@@ -263,8 +263,10 @@ class BugFinderAgent(Agent):
     def process(self, code: str, file_name: str = "unknown.py") -> Dict[str, Any]:
         """Find bugs and issues in the code"""
         
-        # First, check for syntax errors using Python's compiler
+        # Comprehensive error analysis
         syntax_errors = self._check_syntax_errors(code)
+        runtime_errors = self._analyze_runtime_errors(code)
+        logic_errors = self._analyze_logic_errors(code)
         
         system_prompt = """You are a code quality expert who finds bugs and issues in Python code. Focus on:
         1. Logic errors and common mistakes
@@ -278,7 +280,7 @@ class BugFinderAgent(Agent):
         Always respond with valid JSON format."""
         
         prompt = f"""
-        Find bugs and issues in this Python code:
+        Find additional bugs and issues in this Python code:
         
         File: {file_name}
         
@@ -322,8 +324,8 @@ class BugFinderAgent(Agent):
         try:
             bug_data = json.loads(json_content)
             
-            # Combine syntax errors with AI-detected issues
-            all_issues = syntax_errors + bug_data.get("issues", [])
+            # Combine all detected issues
+            all_issues = syntax_errors + runtime_errors + logic_errors + bug_data.get("issues", [])
             
             return {
                 "agent": self.name,
@@ -343,6 +345,7 @@ class BugFinderAgent(Agent):
         """Check for Python syntax errors using the built-in compiler"""
         import ast
         import sys
+        import re
         
         syntax_errors = []
         lines = code.split('\n')
@@ -361,77 +364,309 @@ class BugFinderAgent(Agent):
             }
             syntax_errors.append(error_info)
         
-        # Check for common syntax issues manually
+        # Comprehensive syntax analysis
         for i, line in enumerate(lines, 1):
             stripped = line.strip()
             
-            # Check for unclosed brackets/parentheses
-            if stripped and not stripped.startswith('#'):
-                # Count brackets and parentheses
-                open_parens = line.count('(') - line.count(')')
-                open_brackets = line.count('[') - line.count(']')
-                open_braces = line.count('{') - line.count('}')
-                
-                if open_parens > 0:
-                    syntax_errors.append({
-                        "line_number": i,
-                        "issue_type": "syntax_error",
-                        "description": f"Unclosed parenthesis on line {i}",
-                        "severity": "high",
-                        "suggestion": "Add missing closing parenthesis ')'"
-                    })
-                
-                if open_brackets > 0:
-                    syntax_errors.append({
-                        "line_number": i,
-                        "issue_type": "syntax_error",
-                        "description": f"Unclosed bracket on line {i}",
-                        "severity": "high",
-                        "suggestion": "Add missing closing bracket ']'"
-                    })
-                
-                if open_braces > 0:
-                    syntax_errors.append({
-                        "line_number": i,
-                        "issue_type": "syntax_error",
-                        "description": f"Unclosed brace on line {i}",
-                        "severity": "high",
-                        "suggestion": "Add missing closing brace '}'"
-                    })
-                
-                # Check for invalid indentation (common Python issue)
-                if line.startswith('\t') and ' ' in line:
-                    syntax_errors.append({
-                        "line_number": i,
-                        "issue_type": "syntax_error",
-                        "description": "Mixed tabs and spaces in indentation",
-                        "severity": "high",
-                        "suggestion": "Use either tabs or spaces consistently for indentation"
-                    })
-                
-                # Check for common syntax mistakes
-                if stripped.endswith(':') and not any(keyword in stripped for keyword in ['if', 'elif', 'else', 'for', 'while', 'def', 'class', 'try', 'except', 'finally', 'with']):
-                    syntax_errors.append({
-                        "line_number": i,
-                        "issue_type": "syntax_error",
-                        "description": "Colon used without valid control structure",
-                        "severity": "medium",
-                        "suggestion": "Remove colon or use with proper control structure (if, for, def, etc.)"
-                    })
-                
-                # Check for invalid characters
-                try:
-                    line.encode('ascii')
-                except UnicodeEncodeError:
-                    syntax_errors.append({
-                        "line_number": i,
-                        "issue_type": "syntax_error",
-                        "description": "Non-ASCII characters found in code",
-                        "severity": "low",
-                        "suggestion": "Use only ASCII characters or add proper encoding declaration"
-                    })
+            if not stripped or stripped.startswith('#'):
+                continue
+            
+            # 1. Check for unclosed brackets/parentheses
+            open_parens = line.count('(') - line.count(')')
+            open_brackets = line.count('[') - line.count(']')
+            open_braces = line.count('{') - line.count('}')
+            
+            if open_parens > 0:
+                syntax_errors.append({
+                    "line_number": i,
+                    "issue_type": "syntax_error",
+                    "description": f"Unclosed parenthesis on line {i}",
+                    "severity": "high",
+                    "suggestion": "Add missing closing parenthesis ')'"
+                })
+            
+            if open_brackets > 0:
+                syntax_errors.append({
+                    "line_number": i,
+                    "issue_type": "syntax_error",
+                    "description": f"Unclosed bracket on line {i}",
+                    "severity": "high",
+                    "suggestion": "Add missing closing bracket ']'"
+                })
+            
+            if open_braces > 0:
+                syntax_errors.append({
+                    "line_number": i,
+                    "issue_type": "syntax_error",
+                    "description": f"Unclosed brace on line {i}",
+                    "severity": "high",
+                    "suggestion": "Add missing closing brace '}'"
+                })
+            
+            # 2. Check for invalid indentation
+            if line.startswith('\t') and ' ' in line:
+                syntax_errors.append({
+                    "line_number": i,
+                    "issue_type": "syntax_error",
+                    "description": "Mixed tabs and spaces in indentation",
+                    "severity": "high",
+                    "suggestion": "Use either tabs or spaces consistently for indentation"
+                })
+            
+            # 3. Check for invalid colon usage
+            if stripped.endswith(':') and not any(keyword in stripped for keyword in ['if', 'elif', 'else', 'for', 'while', 'def', 'class', 'try', 'except', 'finally', 'with', 'async']):
+                syntax_errors.append({
+                    "line_number": i,
+                    "issue_type": "syntax_error",
+                    "description": "Colon used without valid control structure",
+                    "severity": "medium",
+                    "suggestion": "Remove colon or use with proper control structure (if, for, def, etc.)"
+                })
+            
+            # 4. Check for function definition issues
+            if stripped.startswith('def ') and not stripped.includes('('):
+                syntax_errors.append({
+                    "line_number": i,
+                    "issue_type": "syntax_error",
+                    "description": "Function definition missing parentheses",
+                    "severity": "high",
+                    "suggestion": "Add parentheses after function name: def function_name():"
+                })
+            
+            # 5. Check for class definition issues
+            if stripped.startswith('class ') and not stripped.includes(':'):
+                syntax_errors.append({
+                    "line_number": i,
+                    "issue_type": "syntax_error",
+                    "description": "Class definition missing colon",
+                    "severity": "high",
+                    "suggestion": "Add colon after class name: class ClassName:"
+                })
+            
+            # 6. Check for invalid assignment operators
+            if '==' in stripped and not any(op in stripped for op in ['==', '!=', '<=', '>=', '<', '>']):
+                syntax_errors.append({
+                    "line_number": i,
+                    "issue_type": "syntax_error",
+                    "description": "Invalid comparison operator",
+                    "severity": "high",
+                    "suggestion": "Use valid comparison operators: ==, !=, <, >, <=, >="
+                })
+            
+            # 7. Check for invalid characters
+            try:
+                line.encode('ascii')
+            except UnicodeEncodeError:
+                syntax_errors.append({
+                    "line_number": i,
+                    "issue_type": "syntax_error",
+                    "description": "Non-ASCII characters found in code",
+                    "severity": "low",
+                    "suggestion": "Use only ASCII characters or add proper encoding declaration"
+                })
+            
+            # 8. Check for invalid string literals
+            if line.count('"') % 2 != 0 or line.count("'") % 2 != 0:
+                # Check if it's not a comment and has odd number of quotes
+                if not stripped.startswith('#'):
+                    quote_count = line.count('"') + line.count("'")
+                    if quote_count % 2 != 0:
+                        syntax_errors.append({
+                            "line_number": i,
+                            "issue_type": "syntax_error",
+                            "description": "Unclosed string literal",
+                            "severity": "high",
+                            "suggestion": "Close the string with matching quote"
+                        })
+        
+        # 9. Check for overall bracket balance across all lines
+        total_open_parens = sum(line.count('(') for line in lines)
+        total_close_parens = sum(line.count(')') for line in lines)
+        total_open_brackets = sum(line.count('[') for line in lines)
+        total_close_brackets = sum(line.count(']') for line in lines)
+        total_open_braces = sum(line.count('{') for line in lines)
+        total_close_braces = sum(line.count('}') for line in lines)
+        
+        if total_open_parens != total_close_parens:
+            syntax_errors.append({
+                "line_number": 1,
+                "issue_type": "syntax_error",
+                "description": f"Unmatched parentheses in code ({abs(total_open_parens - total_close_parens)} unmatched)",
+                "severity": "high",
+                "suggestion": "Balance all opening and closing parentheses"
+            })
+        
+        if total_open_brackets != total_close_brackets:
+            syntax_errors.append({
+                "line_number": 1,
+                "issue_type": "syntax_error",
+                "description": f"Unmatched brackets in code ({abs(total_open_brackets - total_close_brackets)} unmatched)",
+                "severity": "high",
+                "suggestion": "Balance all opening and closing brackets"
+            })
+        
+        if total_open_braces != total_close_braces:
+            syntax_errors.append({
+                "line_number": 1,
+                "issue_type": "syntax_error",
+                "description": f"Unmatched braces in code ({abs(total_open_braces - total_close_braces)} unmatched)",
+                "severity": "high",
+                "suggestion": "Balance all opening and closing braces"
+            })
+        
+        # 10. Check for invalid import statements
+        for i, line in enumerate(lines, 1):
+            stripped = line.strip()
+            if stripped.startswith('import ') and not re.match(r'^import\s+[\w\.]+', stripped):
+                syntax_errors.append({
+                    "line_number": i,
+                    "issue_type": "syntax_error",
+                    "description": "Invalid import statement syntax",
+                    "severity": "medium",
+                    "suggestion": "Use correct import syntax: import module_name"
+                })
+            
+            if stripped.startswith('from ') and ' import ' not in stripped:
+                syntax_errors.append({
+                    "line_number": i,
+                    "issue_type": "syntax_error",
+                    "description": "Invalid from-import statement",
+                    "severity": "medium",
+                    "suggestion": "Use correct syntax: from module import name"
+                })
         
         return syntax_errors
+    
+    def _analyze_runtime_errors(self, code: str) -> List[Dict[str, Any]]:
+        """Analyze potential runtime errors"""
+        runtime_errors = []
+        lines = code.split('\n')
+        
+        for i, line in enumerate(lines, 1):
+            stripped = line.strip()
+            
+            if not stripped or stripped.startswith('#'):
+                continue
+            
+            # 1. Division by zero potential
+            if '/' in stripped and 'if' not in stripped:
+                # Look for division without zero checks
+                div_parts = stripped.split('/')
+                if len(div_parts) > 1:
+                    divisor = div_parts[1].strip()
+                    if divisor != '0' and 'len(' not in divisor and divisor not in ['0', 'zero']:
+                        runtime_errors.append({
+                            "line_number": i,
+                            "issue_type": "runtime_error",
+                            "description": "Potential division by zero error",
+                            "severity": "medium",
+                            "suggestion": "Add zero check before division: if divisor != 0:"
+                        })
+            
+            # 2. Index out of range potential
+            if '[' in stripped and ']' in stripped:
+                # Check for list indexing without bounds checking
+                if 'len(' not in stripped and 'range(' not in stripped:
+                    runtime_errors.append({
+                        "line_number": i,
+                        "issue_type": "runtime_error",
+                        "description": "Potential index out of range error",
+                        "severity": "medium",
+                        "suggestion": "Add bounds check: if index < len(list):"
+                    })
+            
+            # 3. Key error potential in dictionaries
+            if 'in' in stripped and '{' in stripped and ']' in stripped:
+                if 'get(' not in stripped and 'keys(' not in stripped:
+                    runtime_errors.append({
+                        "line_number": i,
+                        "issue_type": "runtime_error",
+                        "description": "Potential KeyError in dictionary access",
+                        "severity": "medium",
+                        "suggestion": "Use dict.get(key, default) or check with 'key in dict'"
+                    })
+            
+            # 4. Type conversion issues
+            if '+' in stripped and ('print(' in stripped or 'return ' in stripped):
+                # Check for string concatenation with variables
+                parts = stripped.split('+')
+                for part in parts:
+                    part = part.strip()
+                    if part and not (part.startswith('"') or part.startswith("'") or part.isdigit() or part.endswith('"') or part.endswith("'")):
+                        runtime_errors.append({
+                            "line_number": i,
+                            "issue_type": "runtime_error",
+                            "description": "Potential type error in string concatenation",
+                            "severity": "medium",
+                            "suggestion": "Convert to string: str(variable) or use f-string"
+                        })
+                        break
+        
+        return runtime_errors
+    
+    def _analyze_logic_errors(self, code: str) -> List[Dict[str, Any]]:
+        """Analyze potential logic errors"""
+        logic_errors = []
+        lines = code.split('\n')
+        
+        # Track variable definitions
+        defined_vars = set()
+        used_vars = set()
+        
+        for i, line in enumerate(lines, 1):
+            stripped = line.strip()
+            
+            if not stripped or stripped.startswith('#'):
+                continue
+            
+            # Track variable assignments
+            if '=' in stripped and not any(keyword in stripped for keyword in ['==', '!=', '<=', '>=', '<', '>']):
+                var_parts = stripped.split('=')[0].strip()
+                if var_parts.isidentifier():
+                    defined_vars.add(var_parts)
+            
+            # Track variable usage
+            for word in re.findall(r'\b[a-zA-Z_][a-zA-Z0-9_]*\b', stripped):
+                if word.isidentifier() and word not in defined_vars and word not in [
+                    'True', 'False', 'None', 'len', 'str', 'int', 'float', 'list', 'dict', 'set',
+                    'print', 'range', 'enumerate', 'zip', 'sum', 'max', 'min', 'abs', 'sorted',
+                    'if', 'else', 'elif', 'for', 'while', 'def', 'class', 'return', 'import', 'from',
+                    'as', 'in', 'is', 'not', 'and', 'or', 'try', 'except', 'finally', 'with',
+                    'pass', 'break', 'continue', 'global', 'nonlocal', 'lambda', 'yield'
+                ]:
+                    used_vars.add(word)
+        
+        # Check for undefined variables
+        for var in used_vars:
+            if var not in defined_vars:
+                # Find the line where this variable is first used
+                for i, line in enumerate(lines, 1):
+                    if var in line and not line.strip().startswith('#'):
+                        logic_errors.append({
+                            "line_number": i,
+                            "issue_type": "logic_error",
+                            "description": f"Variable '{var}' used before definition",
+                            "severity": "high",
+                            "suggestion": f"Define variable '{var}' before using it"
+                        })
+                        break
+        
+        # Check for infinite loops
+        for i, line in enumerate(lines, 1):
+            stripped = line.strip()
+            if stripped.startswith('while True:'):
+                if i < len(lines) - 1:
+                    next_line = lines[i].strip()
+                    if 'break' not in next_line and 'return' not in next_line:
+                        logic_errors.append({
+                            "line_number": i,
+                            "issue_type": "logic_error",
+                            "description": "Potential infinite loop with while True",
+                            "severity": "high",
+                            "suggestion": "Add break condition or use proper loop condition"
+                        })
+        
+        return logic_errors
 
 
 class SuggestionAgent(Agent):

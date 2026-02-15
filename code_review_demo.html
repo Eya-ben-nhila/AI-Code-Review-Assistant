@@ -151,6 +151,7 @@
                             <button type="button" onclick="loadDemoExample('loops')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">Loops</button>
                             <button type="button" onclick="loadDemoExample('issues')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">Issues</button>
                             <button type="button" onclick="loadDemoExample('syntax_errors')" class="text-xs bg-red-100 hover:bg-red-200 px-2 py-1 rounded">Syntax Errors</button>
+                            <button type="button" onclick="loadDemoExample('complex_errors')" class="text-xs bg-red-100 hover:bg-red-200 px-2 py-1 rounded">Complex Errors</button>
                         </div>
                     </div>
                     
@@ -275,7 +276,7 @@ def main():
     
 main()  # Missing proper if __name__ check`,
             
-            syntax_errors: `# This code has syntax errors
+            syntax_errors: `# This code has multiple types of errors
 def broken_function(
     print("Missing closing parenthesis")
     
@@ -286,7 +287,60 @@ my_list = [1, 2, 3
 print("Unclosed bracket")
 
 def another_function:
-    print("Missing parentheses in function definition")`
+    print("Missing parentheses in function definition")
+
+# Undefined variable usage
+result = undefined_var + 10
+print(result)
+
+# Potential division by zero
+def divide_numbers(a, b):
+    return a / b  # No zero check
+
+# Index out of range potential
+numbers = [1, 2, 3]
+value = numbers[5]  # Index 5 doesn't exist
+
+# Type error in concatenation
+age = 25
+print("Age is: " + age)  # Can't concatenate int and str
+
+# Infinite loop
+while True:
+    print("This will run forever")
+    # No break statement`,
+            
+            complex_errors: `# Complex code with multiple issues
+class Calculator:
+    def __init__(self
+        self.value = 0  # Missing parenthesis and colon
+    
+    def add(self, num):
+        self.value = self.value + num
+        return self.value
+    
+    def divide(self, divisor):
+        # No zero check
+        return self.value / divisor
+    
+    def get_item(self, index):
+        items = [1, 2, 3]
+        return items[index]  # No bounds check
+
+# Usage with errors
+calc = Calculator()
+result = calc.add(5)
+print("Result: " + result)  # Type error
+
+div_result = calc.divide(0)  # Division by zero
+item_result = calc.get_item(10)  # Index out of range
+
+# Undefined variable
+print(undefined_variable)
+
+# Mixed indentation
+	if True:
+    	print("Mixed tabs and spaces")`
         };
 
         function loadDemoExample(type) {
@@ -298,8 +352,12 @@ def another_function:
             const syntaxErrors = [];
             const lines = code.split('\n');
             
-            // Check for unclosed brackets/parentheses
-            let openParens = 0, openBrackets = 0, openBraces = 0;
+            // Track variables for undefined variable detection
+            const definedVars = new Set();
+            const usedVars = new Set();
+            
+            // Track brackets across all lines
+            let totalOpenParens = 0, totalOpenBrackets = 0, totalOpenBraces = 0;
             
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i];
@@ -308,12 +366,66 @@ def another_function:
                 if (!stripped || stripped.startsWith('#')) continue;
                 
                 // Count brackets and parentheses
-                openParens += line.split('(').length - line.split(')').length;
-                openBrackets += line.split('[').length - line.split(']').length;
-                openBraces += line.split('{').length - line.split('}').length;
+                const lineOpenParens = (line.match(/\(/g) || []).length;
+                const lineCloseParens = (line.match(/\)/g) || []).length;
+                const lineOpenBrackets = (line.match(/\[/g) || []).length;
+                const lineCloseBrackets = (line.match(/\]/g) || []).length;
+                const lineOpenBraces = (line.match(/\{/g) || []).length;
+                const lineCloseBraces = (line.match(/\}/g) || []).length;
                 
-                // Check for common syntax issues
-                if (stripped.endsWith(':') && !anyKeywordInLine(stripped, ['if', 'elif', 'else', 'for', 'while', 'def', 'class', 'try', 'except', 'finally', 'with'])) {
+                totalOpenParens += lineOpenParens - lineCloseParens;
+                totalOpenBrackets += lineOpenBrackets - lineCloseBrackets;
+                totalOpenBraces += lineOpenBraces - lineCloseBraces;
+                
+                // Track variable assignments
+                if (stripped.includes('=') && !anyKeywordInLine(stripped, ['==', '!=', '<=', '>=', '<', '>'])) {
+                    const varParts = stripped.split('=')[0].trim();
+                    if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(varParts)) {
+                        definedVars.add(varParts);
+                    }
+                }
+                
+                // Track variable usage
+                const words = stripped.match(/\b[a-zA-Z_][a-zA-Z0-9_]*\b/g) || [];
+                for (const word of words) {
+                    if (!definedVars.has(word) && !isBuiltInOrKeyword(word)) {
+                        usedVars.add(word);
+                    }
+                }
+                
+                // 1. Check for unclosed brackets on this line
+                if (lineOpenParens > lineCloseParens) {
+                    syntaxErrors.push({
+                        line_number: i + 1,
+                        issue_type: "syntax_error",
+                        description: `Unclosed parenthesis on line ${i + 1}`,
+                        severity: "high",
+                        suggestion: "Add missing closing parenthesis ')'"
+                    });
+                }
+                
+                if (lineOpenBrackets > lineCloseBrackets) {
+                    syntaxErrors.push({
+                        line_number: i + 1,
+                        issue_type: "syntax_error",
+                        description: `Unclosed bracket on line ${i + 1}`,
+                        severity: "high",
+                        suggestion: "Add missing closing bracket ']'"
+                    });
+                }
+                
+                if (lineOpenBraces > lineCloseBraces) {
+                    syntaxErrors.push({
+                        line_number: i + 1,
+                        issue_type: "syntax_error",
+                        description: `Unclosed brace on line ${i + 1}`,
+                        severity: "high",
+                        suggestion: "Add missing closing brace '}'"
+                    });
+                }
+                
+                // 2. Check for invalid colon usage
+                if (stripped.endsWith(':') && !anyKeywordInLine(stripped, ['if', 'elif', 'else', 'for', 'while', 'def', 'class', 'try', 'except', 'finally', 'with', 'async'])) {
                     syntaxErrors.push({
                         line_number: i + 1,
                         issue_type: "syntax_error",
@@ -323,7 +435,7 @@ def another_function:
                     });
                 }
                 
-                // Check for function definition without parentheses
+                // 3. Check for function definition issues
                 if (stripped.startsWith('def ') && !stripped.includes('(')) {
                     syntaxErrors.push({
                         line_number: i + 1,
@@ -333,40 +445,158 @@ def another_function:
                         suggestion: "Add parentheses after function name: def function_name():"
                     });
                 }
+                
+                // 4. Check for class definition issues
+                if (stripped.startsWith('class ') && !stripped.includes(':')) {
+                    syntaxErrors.push({
+                        line_number: i + 1,
+                        issue_type: "syntax_error",
+                        description: "Class definition missing colon",
+                        severity: "high",
+                        suggestion: "Add colon after class name: class ClassName:"
+                    });
+                }
+                
+                // 5. Check for invalid string literals
+                const doubleQuotes = (line.match(/"/g) || []).length;
+                const singleQuotes = (line.match(/'/g) || []).length;
+                if ((doubleQuotes % 2 !== 0 || singleQuotes % 2 !== 0) && !stripped.startsWith('#')) {
+                    syntaxErrors.push({
+                        line_number: i + 1,
+                        issue_type: "syntax_error",
+                        description: "Unclosed string literal",
+                        severity: "high",
+                        suggestion: "Close the string with matching quote"
+                    });
+                }
+                
+                // 6. Check for division by zero potential
+                if (stripped.includes('/') && !stripped.includes('if')) {
+                    const parts = stripped.split('/');
+                    if (parts.length > 1) {
+                        const divisor = parts[1].trim();
+                        if (divisor !== '0' && !divisor.includes('len(') && !['0', 'zero'].includes(divisor)) {
+                            syntaxErrors.push({
+                                line_number: i + 1,
+                                issue_type: "runtime_error",
+                                description: "Potential division by zero error",
+                                severity: "medium",
+                                suggestion: "Add zero check before division: if divisor != 0:"
+                            });
+                        }
+                    }
+                }
+                
+                // 7. Check for index out of range potential
+                if (stripped.includes('[') && stripped.includes(']') && !stripped.includes('len(') && !stripped.includes('range(')) {
+                    syntaxErrors.push({
+                        line_number: i + 1,
+                        issue_type: "runtime_error",
+                        description: "Potential index out of range error",
+                        severity: "medium",
+                        suggestion: "Add bounds check: if index < len(list):"
+                    });
+                }
+                
+                // 8. Check for type conversion issues
+                if (stripped.includes('+') && (stripped.includes('print(') || stripped.includes('return '))) {
+                    const parts = stripped.split('+');
+                    for (const part of parts) {
+                        const trimmedPart = part.trim();
+                        if (trimmedPart && 
+                            !trimmedPart.startsWith('"') && !trimmedPart.startsWith("'") && 
+                            !trimmedPart.match(/^\d+$/) && 
+                            !trimmedPart.endsWith('"') && !trimmedPart.endsWith("'")) {
+                            syntaxErrors.push({
+                                line_number: i + 1,
+                                issue_type: "runtime_error",
+                                description: "Potential type error in string concatenation",
+                                severity: "medium",
+                                suggestion: "Convert to string: str(variable) or use f-string"
+                            });
+                            break;
+                        }
+                    }
+                }
+                
+                // 9. Check for infinite loops
+                if (stripped.startsWith('while True:')) {
+                    if (i < lines.length - 1) {
+                        const nextLine = lines[i + 1].trim();
+                        if (!nextLine.includes('break') && !nextLine.includes('return')) {
+                            syntaxErrors.push({
+                                line_number: i + 1,
+                                issue_type: "logic_error",
+                                description: "Potential infinite loop with while True",
+                                severity: "high",
+                                suggestion: "Add break condition or use proper loop condition"
+                            });
+                        }
+                    }
+                }
             }
             
-            // Check for overall unclosed brackets
-            if (openParens > 0) {
+            // 10. Check for overall bracket balance
+            if (totalOpenParens !== 0) {
                 syntaxErrors.push({
                     line_number: 1,
                     issue_type: "syntax_error",
-                    description: `Unclosed parenthesis in code (${openParens} missing)`,
+                    description: `Unmatched parentheses in code (${Math.abs(totalOpenParens)} unmatched)`,
                     severity: "high",
-                    suggestion: "Add missing closing parenthesis ')'"
+                    suggestion: "Balance all opening and closing parentheses"
                 });
             }
             
-            if (openBrackets > 0) {
+            if (totalOpenBrackets !== 0) {
                 syntaxErrors.push({
                     line_number: 1,
                     issue_type: "syntax_error",
-                    description: `Unclosed bracket in code (${openBrackets} missing)`,
+                    description: `Unmatched brackets in code (${Math.abs(totalOpenBrackets)} unmatched)`,
                     severity: "high",
-                    suggestion: "Add missing closing bracket ']'"
+                    suggestion: "Balance all opening and closing brackets"
                 });
             }
             
-            if (openBraces > 0) {
+            if (totalOpenBraces !== 0) {
                 syntaxErrors.push({
                     line_number: 1,
                     issue_type: "syntax_error",
-                    description: `Unclosed brace in code (${openBraces} missing)`,
+                    description: `Unmatched braces in code (${Math.abs(totalOpenBraces)} unmatched)`,
                     severity: "high",
-                    suggestion: "Add missing closing brace '}'"
+                    suggestion: "Balance all opening and closing braces"
                 });
+            }
+            
+            // 11. Check for undefined variables
+            for (const varName of usedVars) {
+                if (!definedVars.has(varName)) {
+                    for (let i = 0; i < lines.length; i++) {
+                        if (lines[i].includes(varName) && !lines[i].trim().startsWith('#')) {
+                            syntaxErrors.push({
+                                line_number: i + 1,
+                                issue_type: "logic_error",
+                                description: `Variable '${varName}' used before definition`,
+                                severity: "high",
+                                suggestion: `Define variable '${varName}' before using it`
+                            });
+                            break;
+                        }
+                    }
+                }
             }
             
             return syntaxErrors;
+        }
+
+        function isBuiltInOrKeyword(word) {
+            const builtIns = [
+                'True', 'False', 'None', 'len', 'str', 'int', 'float', 'list', 'dict', 'set',
+                'print', 'range', 'enumerate', 'zip', 'sum', 'max', 'min', 'abs', 'sorted',
+                'if', 'else', 'elif', 'for', 'while', 'def', 'class', 'return', 'import', 'from',
+                'as', 'in', 'is', 'not', 'and', 'or', 'try', 'except', 'finally', 'with',
+                'pass', 'break', 'continue', 'global', 'nonlocal', 'lambda', 'yield'
+            ];
+            return builtIns.includes(word);
         }
 
         function anyKeywordInLine(line, keywords) {
