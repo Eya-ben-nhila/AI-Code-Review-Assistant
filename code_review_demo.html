@@ -150,6 +150,7 @@
                             <button type="button" onclick="loadDemoExample('functions')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">Functions</button>
                             <button type="button" onclick="loadDemoExample('loops')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">Loops</button>
                             <button type="button" onclick="loadDemoExample('issues')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">Issues</button>
+                            <button type="button" onclick="loadDemoExample('syntax_errors')" class="text-xs bg-red-100 hover:bg-red-200 px-2 py-1 rounded">Syntax Errors</button>
                         </div>
                     </div>
                     
@@ -272,12 +273,104 @@ def main():
     avg = calculate_average(scores)
     print("Average score is: " + avg)  # Type error here!
     
-main()  # Missing proper if __name__ check`
+main()  # Missing proper if __name__ check`,
+            
+            syntax_errors: `# This code has syntax errors
+def broken_function(
+    print("Missing closing parenthesis")
+    
+if x > 5
+    print("Missing colon")
+    
+my_list = [1, 2, 3
+print("Unclosed bracket")
+
+def another_function:
+    print("Missing parentheses in function definition")`
         };
 
         function loadDemoExample(type) {
             const textarea = document.getElementById('pythonCode');
             textarea.value = demoExamples[type];
+        }
+
+        function checkSyntaxErrors(code) {
+            const syntaxErrors = [];
+            const lines = code.split('\n');
+            
+            // Check for unclosed brackets/parentheses
+            let openParens = 0, openBrackets = 0, openBraces = 0;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const stripped = line.trim();
+                
+                if (!stripped || stripped.startsWith('#')) continue;
+                
+                // Count brackets and parentheses
+                openParens += line.split('(').length - line.split(')').length;
+                openBrackets += line.split('[').length - line.split(']').length;
+                openBraces += line.split('{').length - line.split('}').length;
+                
+                // Check for common syntax issues
+                if (stripped.endsWith(':') && !anyKeywordInLine(stripped, ['if', 'elif', 'else', 'for', 'while', 'def', 'class', 'try', 'except', 'finally', 'with'])) {
+                    syntaxErrors.push({
+                        line_number: i + 1,
+                        issue_type: "syntax_error",
+                        description: "Colon used without valid control structure",
+                        severity: "medium",
+                        suggestion: "Remove colon or use with proper control structure (if, for, def, etc.)"
+                    });
+                }
+                
+                // Check for function definition without parentheses
+                if (stripped.startsWith('def ') && !stripped.includes('(')) {
+                    syntaxErrors.push({
+                        line_number: i + 1,
+                        issue_type: "syntax_error",
+                        description: "Function definition missing parentheses",
+                        severity: "high",
+                        suggestion: "Add parentheses after function name: def function_name():"
+                    });
+                }
+            }
+            
+            // Check for overall unclosed brackets
+            if (openParens > 0) {
+                syntaxErrors.push({
+                    line_number: 1,
+                    issue_type: "syntax_error",
+                    description: `Unclosed parenthesis in code (${openParens} missing)`,
+                    severity: "high",
+                    suggestion: "Add missing closing parenthesis ')'"
+                });
+            }
+            
+            if (openBrackets > 0) {
+                syntaxErrors.push({
+                    line_number: 1,
+                    issue_type: "syntax_error",
+                    description: `Unclosed bracket in code (${openBrackets} missing)`,
+                    severity: "high",
+                    suggestion: "Add missing closing bracket ']'"
+                });
+            }
+            
+            if (openBraces > 0) {
+                syntaxErrors.push({
+                    line_number: 1,
+                    issue_type: "syntax_error",
+                    description: `Unclosed brace in code (${openBraces} missing)`,
+                    severity: "high",
+                    suggestion: "Add missing closing brace '}'"
+                });
+            }
+            
+            return syntaxErrors;
+        }
+
+        function anyKeywordInLine(line, keywords) {
+            return keywords.some(keyword => line.includes(keyword));
         }
 
         // Sample data for demonstration
@@ -380,6 +473,9 @@ main()  # Missing proper if __name__ check`
         }
 
         function displayResults(fileName, code) {
+            // First, check for real syntax errors
+            const syntaxErrors = checkSyntaxErrors(code);
+            
             // Analyze code characteristics for dynamic feedback
             const codeLines = code.split('\n').filter(line => line.trim()).length;
             const hasFunctions = code.includes('def ');
@@ -394,7 +490,7 @@ main()  # Missing proper if __name__ check`
             const hasDocstrings = code.includes('"""') || code.includes("'''");
             
             // Detect potential issues dynamically
-            const detectedIssues = [];
+            const detectedIssues = [...syntaxErrors];
             const detectedSuggestions = [];
             
             // Check for common beginner issues
@@ -456,6 +552,9 @@ main()  # Missing proper if __name__ check`
             
             // Dynamic scoring based on code characteristics
             let baseScore = 85;
+            
+            // Adjust score based on syntax errors (major penalty)
+            baseScore -= syntaxErrors.length * 20;
             
             // Adjust score based on code quality indicators
             if (detectedIssues.length > 2) baseScore -= 10;
@@ -520,7 +619,7 @@ main()  # Missing proper if __name__ check`
             
             const review = {
                 file_name: fileName,
-                code_summary: `A Python script with ${codeLines} lines of code${hasFunctions ? ' using functions for modularity' : ''}${hasLoops ? ' with loop constructs' : ''}${hasConditionals ? ' and conditional logic' : ''}.`,
+                code_summary: `A Python script with ${codeLines} lines of code${syntaxErrors.length > 0 ? ' containing syntax errors' : ''}${hasFunctions ? ' using functions for modularity' : ''}${hasLoops ? ' with loop constructs' : ''}${hasConditionals ? ' and conditional logic' : ''}.`,
                 overall_score: overallScore,
                 explanations: explanations,
                 issues: detectedIssues,

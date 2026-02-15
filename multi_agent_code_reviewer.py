@@ -263,12 +263,16 @@ class BugFinderAgent(Agent):
     def process(self, code: str, file_name: str = "unknown.py") -> Dict[str, Any]:
         """Find bugs and issues in the code"""
         
+        # First, check for syntax errors using Python's compiler
+        syntax_errors = self._check_syntax_errors(code)
+        
         system_prompt = """You are a code quality expert who finds bugs and issues in Python code. Focus on:
-        1. Syntax errors and runtime errors
-        2. Logic errors and common mistakes
-        3. Poor coding practices that could cause issues
-        4. Security vulnerabilities
-        5. Performance issues
+        1. Logic errors and common mistakes
+        2. Poor coding practices that could cause issues
+        3. Security vulnerabilities
+        4. Performance issues
+        5. Runtime errors that might occur
+        6. Code style and readability issues
         
         Rate issues by severity: low, medium, high
         Always respond with valid JSON format."""
@@ -285,7 +289,7 @@ class BugFinderAgent(Agent):
         
         Please identify:
         1. Line numbers where issues occur
-        2. Type of issue (syntax, logic, security, performance, etc.)
+        2. Type of issue (logic_error, runtime_error, security, performance, style, etc.)
         3. Description of the problem
         4. Severity level (low, medium, high)
         5. Suggestions to fix each issue
@@ -295,7 +299,7 @@ class BugFinderAgent(Agent):
             "issues": [
                 {{
                     "line_number": 10,
-                    "issue_type": "syntax_error",
+                    "issue_type": "logic_error",
                     "description": "What the problem is",
                     "severity": "medium",
                     "suggestion": "How to fix it"
@@ -317,10 +321,14 @@ class BugFinderAgent(Agent):
         
         try:
             bug_data = json.loads(json_content)
+            
+            # Combine syntax errors with AI-detected issues
+            all_issues = syntax_errors + bug_data.get("issues", [])
+            
             return {
                 "agent": self.name,
                 "status": "success",
-                "bugs": bug_data,
+                "bugs": {"issues": all_issues},
                 "raw_response": response
             }
         except json.JSONDecodeError:
@@ -330,6 +338,100 @@ class BugFinderAgent(Agent):
                 "message": "Failed to parse bug detection response",
                 "raw_response": response
             }
+    
+    def _check_syntax_errors(self, code: str) -> List[Dict[str, Any]]:
+        """Check for Python syntax errors using the built-in compiler"""
+        import ast
+        import sys
+        
+        syntax_errors = []
+        lines = code.split('\n')
+        
+        try:
+            # Try to parse the code as AST
+            ast.parse(code)
+        except SyntaxError as e:
+            # Handle syntax errors
+            error_info = {
+                "line_number": e.lineno or 1,
+                "issue_type": "syntax_error",
+                "description": f"Syntax Error: {e.msg}",
+                "severity": "high",
+                "suggestion": f"Fix the syntax error: {e.msg}"
+            }
+            syntax_errors.append(error_info)
+        
+        # Check for common syntax issues manually
+        for i, line in enumerate(lines, 1):
+            stripped = line.strip()
+            
+            # Check for unclosed brackets/parentheses
+            if stripped and not stripped.startswith('#'):
+                # Count brackets and parentheses
+                open_parens = line.count('(') - line.count(')')
+                open_brackets = line.count('[') - line.count(']')
+                open_braces = line.count('{') - line.count('}')
+                
+                if open_parens > 0:
+                    syntax_errors.append({
+                        "line_number": i,
+                        "issue_type": "syntax_error",
+                        "description": f"Unclosed parenthesis on line {i}",
+                        "severity": "high",
+                        "suggestion": "Add missing closing parenthesis ')'"
+                    })
+                
+                if open_brackets > 0:
+                    syntax_errors.append({
+                        "line_number": i,
+                        "issue_type": "syntax_error",
+                        "description": f"Unclosed bracket on line {i}",
+                        "severity": "high",
+                        "suggestion": "Add missing closing bracket ']'"
+                    })
+                
+                if open_braces > 0:
+                    syntax_errors.append({
+                        "line_number": i,
+                        "issue_type": "syntax_error",
+                        "description": f"Unclosed brace on line {i}",
+                        "severity": "high",
+                        "suggestion": "Add missing closing brace '}'"
+                    })
+                
+                # Check for invalid indentation (common Python issue)
+                if line.startswith('\t') and ' ' in line:
+                    syntax_errors.append({
+                        "line_number": i,
+                        "issue_type": "syntax_error",
+                        "description": "Mixed tabs and spaces in indentation",
+                        "severity": "high",
+                        "suggestion": "Use either tabs or spaces consistently for indentation"
+                    })
+                
+                # Check for common syntax mistakes
+                if stripped.endswith(':') and not any(keyword in stripped for keyword in ['if', 'elif', 'else', 'for', 'while', 'def', 'class', 'try', 'except', 'finally', 'with']):
+                    syntax_errors.append({
+                        "line_number": i,
+                        "issue_type": "syntax_error",
+                        "description": "Colon used without valid control structure",
+                        "severity": "medium",
+                        "suggestion": "Remove colon or use with proper control structure (if, for, def, etc.)"
+                    })
+                
+                # Check for invalid characters
+                try:
+                    line.encode('ascii')
+                except UnicodeEncodeError:
+                    syntax_errors.append({
+                        "line_number": i,
+                        "issue_type": "syntax_error",
+                        "description": "Non-ASCII characters found in code",
+                        "severity": "low",
+                        "suggestion": "Use only ASCII characters or add proper encoding declaration"
+                    })
+        
+        return syntax_errors
 
 
 class SuggestionAgent(Agent):

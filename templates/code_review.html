@@ -151,6 +151,7 @@
                             <button type="button" onclick="loadExample('functions')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">With Functions</button>
                             <button type="button" onclick="loadExample('loops')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">With Loops</button>
                             <button type="button" onclick="loadExample('errors')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">With Issues</button>
+                            <button type="button" onclick="loadExample('syntax_errors')" class="text-xs bg-red-100 hover:bg-red-200 px-2 py-1 rounded">Syntax Errors</button>
                         </div>
                     </div>
                     
@@ -271,7 +272,20 @@ def main():
     avg = calculate_average(scores)
     print("Average score is: " + avg)  # Type error here!
     
-main()  # Missing proper if __name__ check`
+main()  # Missing proper if __name__ check`,
+            
+            syntax_errors: `# This code has syntax errors
+def broken_function(
+    print("Missing closing parenthesis")
+    
+if x > 5
+    print("Missing colon")
+    
+my_list = [1, 2, 3
+print("Unclosed bracket")
+
+def another_function:
+    print("Missing parentheses in function definition")`
         };
 
         function loadExample(type) {
