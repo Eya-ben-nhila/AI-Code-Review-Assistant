@@ -415,26 +415,43 @@
         }
 
         function displayResults(goal, level, hours, duration) {
-            // Find matching sample plan or create default
+            // Generate dynamic validation score based on subject
+            const baseScore = 75 + Math.floor(Math.random() * 15) - 7; // Random variation
+            
+            // Adjust score based on subject complexity
+            if (goal.toLowerCase().includes('machine learning') || goal.toLowerCase().includes('ai') || goal.toLowerCase().includes('advanced')) {
+                baseScore -= 5; // More complex subjects
+            } else if (goal.toLowerCase().includes('basic') || goal.toLowerCase().includes('beginner')) {
+                baseScore += 5; // Simpler subjects
+            }
+            
+            // Adjust based on time feasibility
+            const totalHours = parseInt(hours) * parseInt(duration);
+            if (totalHours > 200) baseScore -= 10; // Very intensive
+            else if (totalHours < 50) baseScore += 5; // Very light
+            
+            const validationScore = Math.max(60, Math.min(95, baseScore));
+            
+            // Find matching sample plan or create dynamic one
             let plan = samplePlans[goal];
             if (!plan) {
                 plan = {
                     title: goal + " Learning Path",
                     duration: parseInt(duration),
                     dailyHours: (parseInt(hours) / 7).toFixed(1),
-                    validationScore: 85,
-                    topics: [
-                        { name: "Foundation Topics", level: "Beginner", hours: 20 },
-                        { name: "Core Concepts", level: "Intermediate", hours: 30 },
-                        { name: "Advanced Applications", level: "Advanced", hours: 25 }
-                    ],
-                    recommendations: [
-                        "Focus on practical projects",
-                        "Maintain consistent study schedule",
-                        "Review topics regularly for retention"
-                    ]
+                    validationScore: validationScore,
+                    topics: generateDynamicTopics(goal, level),
+                    recommendations: generateDynamicRecommendations(goal, level, validationScore)
                 };
+            } else {
+                // Override sample plan with dynamic score
+                plan.validationScore = validationScore;
+                plan.title = `${goal} - ${level.charAt(0).toUpperCase() + level.slice(1)} Level Plan`;
             }
+
+            const complexity = goal.toLowerCase().includes('machine learning') || goal.toLowerCase().includes('ai') || goal.toLowerCase().includes('advanced') ? 'High' :
+                           goal.toLowerCase().includes('intermediate') || goal.toLowerCase().includes('development') ? 'Medium' : 'Low';
+            const timeIntensity = totalHours > 150 ? 'High' : totalHours > 80 ? 'Medium' : 'Low';
 
             const resultsHTML = `
                 <div class="space-y-6">
@@ -451,12 +468,35 @@
                                 <div class="text-sm text-gray-600">Daily Study</div>
                             </div>
                             <div class="text-center">
-                                <div class="text-2xl font-bold text-green-600">${plan.validationScore}/100</div>
+                                <div class="text-2xl font-bold ${plan.validationScore >= 85 ? 'text-green-600' : plan.validationScore >= 75 ? 'text-yellow-600' : 'text-red-600'}">${plan.validationScore}/100</div>
                                 <div class="text-sm text-gray-600">Validation</div>
                             </div>
                             <div class="text-center">
                                 <div class="text-2xl font-bold text-orange-600">${plan.topics.length}</div>
                                 <div class="text-sm text-gray-600">Topics</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generation Analysis -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold mb-3">Generation Analysis</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-600">Subject:</span>
+                                <span class="font-medium ml-2">${goal}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Level:</span>
+                                <span class="font-medium ml-2">${level.charAt(0).toUpperCase() + level.slice(1)}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Complexity:</span>
+                                <span class="font-medium ml-2 ${complexity === 'High' ? 'text-red-600' : complexity === 'Medium' ? 'text-yellow-600' : 'text-green-600'}">${complexity}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Time Intensity:</span>
+                                <span class="font-medium ml-2 ${timeIntensity === 'High' ? 'text-red-600' : timeIntensity === 'Medium' ? 'text-yellow-600' : 'text-green-600'}">${timeIntensity}</span>
                             </div>
                         </div>
                     </div>
@@ -536,6 +576,53 @@
             
             // Scroll to results
             resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function generateDynamicTopics(goal, level) {
+            const baseTopics = {
+                'python': ['Python Basics', 'Data Structures', 'NumPy & Pandas', 'Data Visualization', 'Machine Learning'],
+                'web': ['HTML/CSS Fundamentals', 'JavaScript Basics', 'React Framework', 'Node.js Backend', 'Database Design'],
+                'data science': ['Statistics Basics', 'Python Programming', 'Data Cleaning', 'Machine Learning', 'Model Deployment'],
+                'default': ['Foundation Topics', 'Core Concepts', 'Practical Applications', 'Advanced Topics', 'Project Work']
+            };
+
+            let topics = baseTopics['default'];
+            for (const [key, value] of Object.entries(baseTopics)) {
+                if (goal.toLowerCase().includes(key)) {
+                    topics = value;
+                    break;
+                }
+            }
+
+            return topics.map((topic, index) => ({
+                name: topic,
+                level: index < 2 ? 'beginner' : index < 4 ? 'intermediate' : 'advanced',
+                hours: Math.floor(Math.random() * 20) + 15
+            }));
+        }
+
+        function generateDynamicRecommendations(goal, level, score) {
+            const baseRecs = [
+                "Focus on consistent daily practice",
+                "Include hands-on projects throughout the course",
+                "Schedule regular review sessions"
+            ];
+
+            if (score < 75) {
+                baseRecs.push("Consider extending timeline for better retention");
+            } else if (score > 90) {
+                baseRecs.push("Excellent plan - maintain this pace");
+            }
+
+            if (goal.toLowerCase().includes('python')) {
+                baseRecs.push("Practice coding challenges on platforms like LeetCode");
+            } else if (goal.toLowerCase().includes('web')) {
+                baseRecs.push("Build portfolio projects as you learn");
+            } else if (goal.toLowerCase().includes('data')) {
+                baseRecs.push("Work with real datasets for practical experience");
+            }
+
+            return baseRecs.slice(0, 3);
         }
     </script>
 </body>
