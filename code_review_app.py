@@ -21,9 +21,9 @@ def index():
 @app.route('/review_code', methods=['POST'])
 def review_code():
     try:
-        # Get form data
+        # Get form data with validation
         code = request.form.get('code', '').strip()
-        file_name = request.form.get('file_name', 'submitted_code.py').strip()
+        file_name = request.form.get('file_name', '').strip()
         
         # Validate code input
         if not code:
@@ -32,7 +32,9 @@ def review_code():
                 "error": "Please provide Python code to review."
             })
         
-        if not file_name.endswith('.py'):
+        if not file_name:
+            file_name = "submitted_code.py"
+        elif not file_name.endswith('.py'):
             file_name += '.py'
         
         # Generate code review

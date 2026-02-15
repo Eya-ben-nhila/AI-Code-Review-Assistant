@@ -142,19 +142,16 @@
                         <label class="block text-sm font-medium mb-2">Python Code</label>
                         <textarea id="code" name="code" rows="12" required
                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"
-                            placeholder="Paste your Python code here...">def calculate_average(numbers):
-    total = 0
-    for num in numbers:
-        total = total + num
-    average = total / len(numbers)
-    return average
-
-def main():
-    scores = [85, 92, 78, 90, 88]
-    avg = calculate_average(scores)
-    print("Average score is: " + avg)
-    
-main()</textarea>
+                            placeholder="Paste your Python code here..."></textarea>
+                        <div class="mt-2 text-xs text-gray-500">
+                            💡 Tip: Try different types of code to see how the agents respond!
+                        </div>
+                        <div class="mt-3 flex gap-2 flex-wrap">
+                            <button type="button" onclick="loadExample('basic')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">Basic Example</button>
+                            <button type="button" onclick="loadExample('functions')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">With Functions</button>
+                            <button type="button" onclick="loadExample('loops')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">With Loops</button>
+                            <button type="button" onclick="loadExample('errors')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">With Issues</button>
+                        </div>
                     </div>
                     
                     <div class="flex justify-center">
@@ -225,6 +222,62 @@ main()</textarea>
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
+
+        // Example code snippets
+        const examples = {
+            basic: `# Simple variable assignment
+name = "Alice"
+age = 25
+print("Hello, " + name)
+print("You are " + str(age) + " years old")`,
+            
+            functions: `def greet(name, age):
+    return f"Hello {name}, you are {age} years old"
+
+def calculate_sum(a, b):
+    result = a + b
+    return result
+
+# Function calls
+message = greet("Bob", 30)
+total = calculate_sum(10, 20)
+print(message)
+print(f"Sum: {total}")`,
+            
+            loops: `numbers = [1, 2, 3, 4, 5]
+total = 0
+
+# Calculate sum using loop
+for num in numbers:
+    total = total + num
+    print(f"Current number: {num}")
+
+print(f"Final total: {total}")
+
+# Find even numbers
+for num in numbers:
+    if num % 2 == 0:
+        print(f"{num} is even")`,
+            
+            errors: `def calculate_average(numbers):
+    total = 0
+    for num in numbers:
+        total = total + num
+    average = total / len(numbers)
+    return average
+
+def main():
+    scores = [85, 92, 78, 90, 88]
+    avg = calculate_average(scores)
+    print("Average score is: " + avg)  # Type error here!
+    
+main()  # Missing proper if __name__ check`
+        };
+
+        function loadExample(type) {
+            const textarea = document.getElementById('code');
+            textarea.value = examples[type];
+        }
 
         // Form submission
         document.getElementById('codeReviewForm').addEventListener('submit', async (e) => {

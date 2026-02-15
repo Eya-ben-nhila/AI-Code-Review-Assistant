@@ -141,19 +141,16 @@
                         <label class="block text-sm font-medium mb-2">Python Code</label>
                         <textarea id="pythonCode" rows="12"
                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"
-                            placeholder="Paste your Python code here...">def calculate_average(numbers):
-    total = 0
-    for num in numbers:
-        total = total + num
-    average = total / len(numbers)
-    return average
-
-def main():
-    scores = [85, 92, 78, 90, 88]
-    avg = calculate_average(scores)
-    print("Average score is: " + avg)
-    
-main()</textarea>
+                            placeholder="Paste your Python code here..."></textarea>
+                        <div class="mt-2 text-xs text-gray-500">
+                            💡 Try different code types to see dynamic analysis!
+                        </div>
+                        <div class="mt-3 flex gap-2 flex-wrap">
+                            <button type="button" onclick="loadDemoExample('basic')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">Basic</button>
+                            <button type="button" onclick="loadDemoExample('functions')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">Functions</button>
+                            <button type="button" onclick="loadDemoExample('loops')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">Loops</button>
+                            <button type="button" onclick="loadDemoExample('issues')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">Issues</button>
+                        </div>
                     </div>
                     
                     <div class="text-center">
@@ -226,6 +223,62 @@ main()</textarea>
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
+
+        // Example code snippets for demo
+        const demoExamples = {
+            basic: `# Simple variable assignment
+name = "Alice"
+age = 25
+print("Hello, " + name)
+print("You are " + str(age) + " years old")`,
+            
+            functions: `def greet(name, age):
+    return f"Hello {name}, you are {age} years old"
+
+def calculate_sum(a, b):
+    result = a + b
+    return result
+
+# Function calls
+message = greet("Bob", 30)
+total = calculate_sum(10, 20)
+print(message)
+print(f"Sum: {total}")`,
+            
+            loops: `numbers = [1, 2, 3, 4, 5]
+total = 0
+
+# Calculate sum using loop
+for num in numbers:
+    total = total + num
+    print(f"Current number: {num}")
+
+print(f"Final total: {total}")
+
+# Find even numbers
+for num in numbers:
+    if num % 2 == 0:
+        print(f"{num} is even")`,
+            
+            issues: `def calculate_average(numbers):
+    total = 0
+    for num in numbers:
+        total = total + num
+    average = total / len(numbers)
+    return average
+
+def main():
+    scores = [85, 92, 78, 90, 88]
+    avg = calculate_average(scores)
+    print("Average score is: " + avg)  # Type error here!
+    
+main()  # Missing proper if __name__ check`
+        };
+
+        function loadDemoExample(type) {
+            const textarea = document.getElementById('pythonCode');
+            textarea.value = demoExamples[type];
+        }
 
         // Sample data for demonstration
         const sampleReviews = {
@@ -327,78 +380,155 @@ main()</textarea>
         }
 
         function displayResults(fileName, code) {
-            // Generate dynamic review based on code complexity
-            const codeLines = code.split('\n').length;
+            // Analyze code characteristics for dynamic feedback
+            const codeLines = code.split('\n').filter(line => line.trim()).length;
             const hasFunctions = code.includes('def ');
+            const hasClasses = code.includes('class ');
             const hasLoops = code.includes('for ') || code.includes('while ');
+            const hasConditionals = code.includes('if ') || code.includes('elif ');
+            const hasLists = code.includes('[') && code.includes(']');
+            const hasDictionaries = code.includes('{') && code.includes(':');
+            const hasPrintStatements = code.includes('print(');
+            const hasImports = code.includes('import ') || code.includes('from ');
+            const hasComments = code.includes('#');
+            const hasDocstrings = code.includes('"""') || code.includes("'''");
+            
+            // Detect potential issues dynamically
+            const detectedIssues = [];
+            const detectedSuggestions = [];
+            
+            // Check for common beginner issues
+            if (hasPrintStatements) {
+                detectedIssues.push({
+                    line_number: code.split('\n').findIndex(line => line.includes('print(')) + 1,
+                    issue_type: "debug_statement",
+                    description: "Print statement found in code",
+                    severity: "low",
+                    suggestion: "Consider removing debug print statements in production code"
+                });
+            }
+            
+            if (code.includes('+ avg') || code.includes('+ total')) {
+                detectedIssues.push({
+                    line_number: code.split('\n').findIndex(line => line.includes('+ avg') || line.includes('+ total')) + 1,
+                    issue_type: "type_error_risk",
+                    description: "Potential type error in string concatenation",
+                    severity: "medium",
+                    suggestion: "Use f-string formatting: f\"Value: {variable}\""
+                });
+            }
+            
+            if (code.includes('total = total +') || code.includes('sum = sum +')) {
+                detectedSuggestions.push({
+                    category: "performance",
+                    suggestion: "Use built-in sum() function instead of manual accumulation",
+                    example: "total = sum(numbers)",
+                    benefit: "More efficient and Pythonic code"
+                });
+            }
+            
+            if (hasPrintStatements && !code.includes('f"') && !code.includes("f'")) {
+                detectedSuggestions.push({
+                    category: "style",
+                    suggestion: "Use f-string formatting for better readability",
+                    example: 'print(f"Result: {value}")',
+                    benefit: "More readable and modern string formatting"
+                });
+            }
+            
+            if (!hasComments && codeLines > 5) {
+                detectedSuggestions.push({
+                    category: "readability",
+                    suggestion: "Add comments to explain complex logic",
+                    example: "# Calculate the average of all numbers",
+                    benefit: "Improves code maintainability and understanding"
+                });
+            }
+            
+            if (hasLoops && !hasConditionals) {
+                detectedSuggestions.push({
+                    category: "logic",
+                    suggestion: "Add input validation in loops",
+                    example: "for item in items:\n    if item is not None:\n        # process item",
+                    benefit: "Prevents runtime errors with invalid data"
+                });
+            }
             
             // Dynamic scoring based on code characteristics
             let baseScore = 85;
-            if (codeLines > 20) baseScore -= 5;  // Longer code
-            if (!hasFunctions) baseScore -= 10;  // No functions
-            if (code.includes('print(')) baseScore -= 5;  // Debug prints
-            if (code.includes('+ avg')) baseScore -= 10;  // Type error risk
+            
+            // Adjust score based on code quality indicators
+            if (detectedIssues.length > 2) baseScore -= 10;
+            if (detectedIssues.length > 0) baseScore -= 5 * detectedIssues.length;
+            if (!hasFunctions && codeLines > 10) baseScore -= 10;
+            if (hasPrintStatements) baseScore -= 5;
+            if (!hasComments && codeLines > 5) baseScore -= 5;
+            if (hasDocstrings) baseScore += 5;
+            if (hasImports) baseScore += 3;
+            if (hasClasses) baseScore += 5;
             
             const overallScore = Math.max(60, Math.min(95, baseScore + Math.floor(Math.random() * 10) - 5));
             
-            // Generate dynamic issues
-            const issues = [];
-            if (code.includes('+ avg')) {
-                issues.push({
-                    line_number: 9,
-                    issue_type: "type_error",
-                    description: "Attempting to concatenate string with number without type conversion",
-                    severity: "medium",
-                    suggestion: "Convert avg to string using str() function or use f-string formatting"
-                });
-            }
-            if (code.includes('total = total +')) {
-                issues.push({
-                    line_number: 4,
-                    issue_type: "inefficient_loop",
-                    description: "Using manual accumulation instead of built-in sum() function",
-                    severity: "low",
-                    suggestion: "Replace manual loop with total = sum(numbers) for better performance"
+            // Generate dynamic explanations based on code content
+            const explanations = [];
+            
+            if (hasFunctions) {
+                explanations.push({
+                    section: "Function Definitions",
+                    explanation: `The code defines ${code.split('def ').length - 1} function(s) to organize logic into reusable blocks.`,
+                    complexity: "beginner",
+                    key_concepts: ["functions", "parameters", "return values", "code organization"]
                 });
             }
             
-            // Generate dynamic suggestions
-            const suggestions = [
-                {
-                    category: "style",
-                    suggestion: "Use f-string formatting for better readability",
-                    example: 'print(f"Average score is: {avg}")',
-                    benefit: "More readable and Pythonic string formatting"
-                }
-            ];
+            if (hasLoops) {
+                explanations.push({
+                    section: "Loop Constructs",
+                    explanation: "The code uses loops to iterate over data structures and perform repeated operations.",
+                    complexity: hasConditionals ? "intermediate" : "beginner",
+                    key_concepts: ["iteration", "loops", "data processing"]
+                });
+            }
             
-            if (code.includes('total = total +')) {
-                suggestions.push({
-                    category: "performance",
-                    suggestion: "Use built-in sum() function instead of manual loop",
-                    example: "total = sum(numbers)",
-                    benefit: "More efficient and concise code"
+            if (hasConditionals) {
+                explanations.push({
+                    section: "Conditional Logic",
+                    explanation: "The code uses conditional statements to make decisions and control program flow.",
+                    complexity: "beginner",
+                    key_concepts: ["conditionals", "decision making", "control flow"]
+                });
+            }
+            
+            if (hasLists || hasDictionaries) {
+                explanations.push({
+                    section: "Data Structures",
+                    explanation: `The code utilizes ${hasLists ? 'lists' : ''}${hasLists && hasDictionaries ? ' and ' : ''}${hasDictionaries ? 'dictionaries' : ''} to store and organize data.`,
+                    complexity: "beginner",
+                    key_concepts: hasLists ? (hasDictionaries ? ["lists", "dictionaries", "data structures"] : ["lists", "collections"]) : ["dictionaries", "key-value pairs"]
+                });
+            }
+            
+            // Add general explanation if no specific structures found
+            if (explanations.length === 0) {
+                explanations.push({
+                    section: "Sequential Execution",
+                    explanation: "The code executes statements in sequence, performing operations step by step.",
+                    complexity: "beginner",
+                    key_concepts: ["sequential execution", "variables", "basic operations"]
                 });
             }
             
             const review = {
                 file_name: fileName,
-                code_summary: `A Python script with ${codeLines} lines that ${hasFunctions ? 'uses functions' : 'contains procedural code'}${hasLoops ? ' and loops' : ''}.`,
+                code_summary: `A Python script with ${codeLines} lines of code${hasFunctions ? ' using functions for modularity' : ''}${hasLoops ? ' with loop constructs' : ''}${hasConditionals ? ' and conditional logic' : ''}.`,
                 overall_score: overallScore,
-                explanations: [
-                    {
-                        section: hasFunctions ? "Function definitions" : "Main execution",
-                        explanation: hasFunctions ? "The code defines reusable functions for better organization and modularity." : "The code executes sequentially without function definitions.",
-                        complexity: "beginner",
-                        key_concepts: hasFunctions ? ["functions", "parameters", "return values"] : ["sequential execution", "variables"]
-                    }
-                ],
-                issues: issues,
-                suggestions: suggestions,
+                explanations: explanations,
+                issues: detectedIssues,
+                suggestions: detectedSuggestions,
                 feedback_summary: [
-                    `Found ${issues.length} issues (${issues.filter(i => i.severity === 'high').length} high, ${issues.filter(i => i.severity === 'medium').length} medium)`,
-                    `Generated ${suggestions.length} improvement suggestions`,
-                    `Code complexity: ${overallScore >= 80 ? 'beginner' : overallScore >= 70 ? 'intermediate' : 'needs improvement'}`,
+                    `Found ${detectedIssues.length} issues (${detectedIssues.filter(i => i.severity === 'high').length} high, ${detectedIssues.filter(i => i.severity === 'medium').length} medium)`,
+                    `Generated ${detectedSuggestions.length} improvement suggestions`,
+                    `Code complexity: ${overallScore >= 80 ? 'beginner-friendly' : overallScore >= 70 ? 'moderate' : 'needs improvement'}`,
                     `Overall quality score: ${overallScore}/100`
                 ]
             };
