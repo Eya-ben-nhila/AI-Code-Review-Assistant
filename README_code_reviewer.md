@@ -1,6 +1,6 @@
-# Multi-Agent AI Python Code Reviewer
+# Multi-Agent AI Code Review Assistant
 
-A sophisticated AI system that reviews beginner-level Python code through collaborative multi-agent architecture.
+A sophisticated AI system that reviews Python code through collaborative multi-agent architecture, helping developers write better code with real-time error detection and improvement suggestions.
 
 ## 🤖 System Architecture
 
@@ -79,8 +79,8 @@ http://localhost:5000
 
 ### 1. Clone and Install Dependencies
 ```bash
-git clone https://github.com/Eya-ben-nhila/AI-Study-Planner
-cd AI-Study-Planner
+git clone https://github.com/Eya-ben-nhila/AI-Code-Review-Assistant
+cd AI-Code-Review-Assistant
 pip install -r requirements.txt
 ```
 
