@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Agent AI Study Planner Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .agent-card {
+            transition: all 0.3s ease;
+        }
+        .agent-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-5xl font-bold text-white mb-4 flex items-center justify-center gap-3">
+                <i data-lucide="brain-circuit"></i>
+                Multi-Agent AI Study Planner
+            </h1>
+            <p class="text-white/90 text-xl max-w-3xl mx-auto">
+                Experience the power of collaborative AI agents working together to create realistic, validated study plans
+            </p>
+        </header>
+
+        <!-- Agent Overview -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-white text-center mb-8">Meet Your AI Agents</h2>
+            <div class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                <!-- Curriculum Agent -->
+                <div class="agent-card glass-effect rounded-2xl p-6 text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="graduation-cap" class="w-8 h-8 text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Curriculum Agent</h3>
+                    <p class="text-gray-600 mb-4">Creates structured learning roadmaps with proper sequencing and prerequisites</p>
+                    <div class="text-sm text-gray-500">
+                        <div class="flex items-center justify-center gap-2 mb-1">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
+                            <span>Topic Generation</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-2 mb-1">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
+                            <span>Prerequisites</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-2">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
+                            <span>Difficulty Levels</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Estimation Agent -->
+                <div class="agent-card glass-effect rounded-2xl p-6 text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="clock" class="w-8 h-8 text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Time Estimation Agent</h3>
+                    <p class="text-gray-600 mb-4">Validates schedule feasibility and optimizes time allocations</p>
+                    <div class="text-sm text-gray-500">
+                        <div class="flex items-center justify-center gap-2 mb-1">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-blue-500"></i>
+                            <span>Schedule Validation</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-2 mb-1">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-blue-500"></i>
+                            <span>Time Optimization</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-2">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-blue-500"></i>
+                            <span>Feasibility Scoring</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Critic Agent -->
+                <div class="agent-card glass-effect rounded-2xl p-6 text-center">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="search" class="w-8 h-8 text-orange-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Critic Agent</h3>
+                    <p class="text-gray-600 mb-4">Reviews plans for realism and provides improvement suggestions</p>
+                    <div class="text-sm text-gray-500">
+                        <div class="flex items-center justify-center gap-2 mb-1">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-orange-500"></i>
+                            <span>Realism Check</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-2 mb-1">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-orange-500"></i>
+                            <span>Gap Analysis</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-2">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-orange-500"></i>
+                            <span>Improvement Tips</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Demo -->
+        <section class="mb-12">
+            <div class="glass-effect rounded-2xl p-8 max-w-4xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6 text-center">Try the Interactive Demo</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">What do you want to learn?</label>
+                        <input type="text" id="learningGoal" 
+                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="e.g., Learn Python for Data Science"
+                            value="Learn Python for Data Science">
+                    </div>
+                    
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Current Level</label>
+                            <select id="currentLevel" 
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Hours/Week</label>
+                            <input type="number" id="hoursPerWeek" 
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="15" value="15">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Duration (Weeks)</label>
+                            <input type="number" id="durationWeeks" 
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="12" value="12">
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button onclick="simulateGeneration()" 
+                            class="bg-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors flex items-center gap-2 mx-auto">
+                            <i data-lucide="sparkles"></i>
+                            Generate Study Plan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workflow Visualization -->
+        <section class="mb-12">
+            <div class="glass-effect rounded-2xl p-8 max-w-6xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6 text-center">Agent Collaboration Workflow</h2>
+                
+                <div class="relative">
+                    <!-- Workflow Steps -->
+                    <div class="grid md:grid-cols-4 gap-6">
+                        <div class="text-center">
+                            <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <span class="text-white font-bold">1</span>
+                            </div>
+                            <h4 class="font-semibold mb-2">Input</h4>
+                            <p class="text-sm text-gray-600">Learning goals & constraints</p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <span class="text-white font-bold">2</span>
+                            </div>
+                            <h4 class="font-semibold mb-2">Curriculum Agent</h4>
+                            <p class="text-sm text-gray-600">Generates roadmap</p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <span class="text-white font-bold">3</span>
+                            </div>
+                            <h4 class="font-semibold mb-2">Time Agent</h4>
+                            <p class="text-sm text-gray-600">Validates schedule</p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="w-12 h-12 bg-orange-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <span class="text-white font-bold">4</span>
+                            </div>
+                            <h4 class="font-semibold mb-2">Critic Agent</h4>
+                            <p class="text-sm text-gray-600">Reviews feasibility</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Arrow connectors -->
+                    <div class="hidden md:block absolute top-6 left-0 right-0">
+                        <svg class="w-full h-12">
+                            <defs>
+                                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#9333ea" />
+                                </marker>
+                            </defs>
+                            <line x1="25%" y1="24" x2="25%" y2="24" stroke="#9333ea" stroke-width="2" marker-end="url(#arrowhead)" />
+                            <line x1="50%" y1="24" x2="50%" y2="24" stroke="#9333ea" stroke-width="2" marker-end="url(#arrowhead)" />
+                            <line x1="75%" y1="24" x2="75%" y2="24" stroke="#9333ea" stroke-width="2" marker-end="url(#arrowhead)" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="resultsSection" class="hidden">
+            <div class="glass-effect rounded-2xl p-8 max-w-6xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6 text-center">Generated Study Plan</h2>
+                
+                <div id="planResults">
+                    <!-- Results will be inserted here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Sample Results -->
+        <section class="mb-12">
+            <div class="glass-effect rounded-2xl p-8 max-w-6xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6 text-center">Sample Generated Plan</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Plan Overview -->
+                    <div class="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-6">
+                        <h3 class="text-xl font-semibold mb-4">Python Data Science Path</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Duration:</span>
+                                <span class="font-semibold">12 weeks</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Daily Study:</span>
+                                <span class="font-semibold">2.1 hours</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Validation Score:</span>
+                                <span class="font-semibold text-green-600">87/100</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Total Topics:</span>
+                                <span class="font-semibold">8 modules</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Topics -->
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-xl font-semibold mb-4">Study Topics</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm">Python Basics</span>
+                                <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Beginner</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm">Data Structures</span>
+                                <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Beginner</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm">NumPy & Pandas</span>
+                                <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Intermediate</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm">Data Visualization</span>
+                                <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Intermediate</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm">Machine Learning</span>
+                                <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Advanced</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI Recommendations -->
+                <div class="mt-6 bg-blue-50 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <i data-lucide="lightbulb"></i>
+                        AI Recommendations
+                    </h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-blue-600 mt-0.5"></i>
+                            <span class="text-sm">Add more hands-on projects between theoretical topics</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-blue-600 mt-0.5"></i>
+                            <span class="text-sm">Consider dedicating extra time for ML algorithms practice</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-blue-600 mt-0.5"></i>
+                            <span class="text-sm">Schedule looks realistic and achievable for your timeline</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Sample data for demonstration
+        const samplePlans = {
+            "Learn Python for Data Science": {
+                title: "Python Data Science Path",
+                duration: 12,
+                dailyHours: 2.1,
+                validationScore: 87,
+                topics: [
+                    { name: "Python Basics", level: "Beginner", hours: 20 },
+                    { name: "Data Structures", level: "Beginner", hours: 15 },
+                    { name: "NumPy & Pandas", level: "Intermediate", hours: 25 },
+                    { name: "Data Visualization", level: "Intermediate", hours: 20 },
+                    { name: "Machine Learning", level: "Advanced", hours: 30 }
+                ],
+                recommendations: [
+                    "Add more hands-on projects between theoretical topics",
+                    "Consider dedicating extra time for ML algorithms practice",
+                    "Schedule looks realistic and achievable for your timeline"
+                ]
+            },
+            "Become a Web Developer": {
+                title: "Full-Stack Web Development",
+                duration: 16,
+                dailyHours: 2.5,
+                validationScore: 82,
+                topics: [
+                    { name: "HTML/CSS Fundamentals", level: "Beginner", hours: 25 },
+                    { name: "JavaScript Basics", level: "Beginner", hours: 30 },
+                    { name: "React Framework", level: "Intermediate", hours: 35 },
+                    { name: "Node.js Backend", level: "Intermediate", hours: 30 },
+                    { name: "Database Design", level: "Advanced", hours: 25 }
+                ],
+                recommendations: [
+                    "Include more portfolio projects throughout the curriculum",
+                    "Consider adding version control (Git) early in the plan",
+                    "Timeline is ambitious but manageable with consistent effort"
+                ]
+            }
+        };
+
+        function simulateGeneration() {
+            const goal = document.getElementById('learningGoal').value;
+            const level = document.getElementById('currentLevel').value;
+            const hours = document.getElementById('hoursPerWeek').value;
+            const duration = document.getElementById('durationWeeks').value;
+            
+            // Show loading animation
+            showLoadingAnimation();
+            
+            // Simulate processing time
+            setTimeout(() => {
+                displayResults(goal, level, hours, duration);
+            }, 3000);
+        }
+
+        function showLoadingAnimation() {
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.classList.remove('hidden');
+            resultsSection.innerHTML = `
+                <div class="text-center py-12">
+                    <div class="animate-pulse-slow">
+                        <i data-lucide="brain-circuit" class="w-16 h-16 mx-auto mb-4 text-purple-600"></i>
+                        <h3 class="text-xl font-semibold mb-4">Multi-Agent System Working...</h3>
+                        <div class="space-y-3 text-left max-w-md mx-auto">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                    <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
+                                </div>
+                                <span>Curriculum Agent generating roadmap...</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <i data-lucide="clock" class="w-4 h-4 text-blue-600"></i>
+                                </div>
+                                <span>Time Estimation Agent validating schedule...</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                                    <i data-lucide="search" class="w-4 h-4 text-orange-600"></i>
+                                </div>
+                                <span>Critic Agent analyzing feasibility...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function displayResults(goal, level, hours, duration) {
+            // Find matching sample plan or create default
+            let plan = samplePlans[goal];
+            if (!plan) {
+                plan = {
+                    title: goal + " Learning Path",
+                    duration: parseInt(duration),
+                    dailyHours: (parseInt(hours) / 7).toFixed(1),
+                    validationScore: 85,
+                    topics: [
+                        { name: "Foundation Topics", level: "Beginner", hours: 20 },
+                        { name: "Core Concepts", level: "Intermediate", hours: 30 },
+                        { name: "Advanced Applications", level: "Advanced", hours: 25 }
+                    ],
+                    recommendations: [
+                        "Focus on practical projects",
+                        "Maintain consistent study schedule",
+                        "Review topics regularly for retention"
+                    ]
+                };
+            }
+
+            const resultsHTML = `
+                <div class="space-y-6">
+                    <!-- Plan Overview -->
+                    <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6">
+                        <h3 class="text-2xl font-bold mb-4">${plan.title}</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-purple-600">${plan.duration}</div>
+                                <div class="text-sm text-gray-600">Weeks</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-600">${plan.daily_hours || plan.dailyHours}h</div>
+                                <div class="text-sm text-gray-600">Daily Study</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600">${plan.validationScore}/100</div>
+                                <div class="text-sm text-gray-600">Validation</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-orange-600">${plan.topics.length}</div>
+                                <div class="text-sm text-gray-600">Topics</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Topics -->
+                    <div>
+                        <h4 class="text-lg font-semibold mb-3">Study Topics</h4>
+                        <div class="grid md:grid-cols-2 gap-3">
+                            ${plan.topics.map(topic => `
+                                <div class="border rounded-lg p-4">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <h5 class="font-semibold">${topic.name}</h5>
+                                        <span class="px-2 py-1 text-xs rounded-full ${
+                                            topic.level === 'beginner' ? 'bg-green-100 text-green-800' :
+                                            topic.level === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                                            'bg-red-100 text-red-800'
+                                        }">${topic.level}</span>
+                                    </div>
+                                    <div class="text-sm text-gray-600">${topic.hours} hours estimated</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- AI Recommendations -->
+                    <div>
+                        <h4 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                            <i data-lucide="lightbulb"></i>
+                            AI Agent Recommendations
+                        </h4>
+                        <div class="bg-blue-50 rounded-lg p-4">
+                            <ul class="space-y-2">
+                                ${plan.recommendations.map(rec => `
+                                    <li class="flex items-start gap-2">
+                                        <i data-lucide="arrow-right" class="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-sm">${rec}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Agent Status -->
+                    <div>
+                        <h4 class="text-lg font-semibold mb-3">Agent Collaboration Status</h4>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="text-center p-3 bg-green-50 rounded-lg">
+                                <i data-lucide="graduation-cap" class="w-8 h-8 mx-auto mb-1 text-green-600"></i>
+                                <div class="text-sm font-medium">Curriculum Agent</div>
+                                <div class="text-xs text-green-600">✅ Complete</div>
+                            </div>
+                            <div class="text-center p-3 bg-blue-50 rounded-lg">
+                                <i data-lucide="clock" class="w-8 h-8 mx-auto mb-1 text-blue-600"></i>
+                                <div class="text-sm font-medium">Time Agent</div>
+                                <div class="text-xs text-blue-600">✅ Complete</div>
+                            </div>
+                            <div class="text-center p-3 bg-orange-50 rounded-lg">
+                                <i data-lucide="search" class="w-8 h-8 mx-auto mb-1 text-orange-600"></i>
+                                <div class="text-sm font-medium">Critic Agent</div>
+                                <div class="text-xs text-orange-600">✅ Complete</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.innerHTML = `
+                <div class="glass-effect rounded-2xl p-8 max-w-6xl mx-auto">
+                    <h2 class="text-2xl font-bold mb-6 text-center">Generated Study Plan</h2>
+                    ${resultsHTML}
+                </div>
+            `;
+            
+            // Re-initialize Lucide icons
+            lucide.createIcons();
+            
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
