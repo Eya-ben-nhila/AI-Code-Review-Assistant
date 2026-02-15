@@ -21,13 +21,60 @@ The system uses three specialized agents that work together:
 - **Function**: Identifies knowledge gaps, workload concerns, and practical feasibility
 - **Output**: Constructive feedback and improvement recommendations
 
+## 🌐 Web Demo
+
+### Quick Demo (No Server Required)
+
+Open the interactive demo directly in your browser:
+
+```bash
+# Method 1: Double-click the file
+demo.html
+
+# Method 2: Open with browser
+start demo.html  # Windows
+open demo.html   # macOS
+xdg-open demo.html  # Linux
+```
+
+**Demo Features:**
+- 🤖 Interactive multi-agent visualization
+- 📋 Real-time study plan generation simulation
+- 🎯 Agent workflow animation
+- 📊 Sample results with validation scores
+- � Mobile-responsive design
+
+### Full Web App (Flask)
+
+For the complete multi-agent system with real AI:
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the web app
+python app.py
+
+# Open browser to
+http://localhost:5000
+```
+
+**Full App Features:**
+- Real AI agent collaboration
+- Live OpenRouter API integration
+- Custom study plan generation
+- Detailed validation and feedback
+- Agent status tracking
+
 ## 🚀 Features
 
 - **Multi-Agent Collaboration**: Agents work sequentially to refine and validate plans
-- **Flexible LLM Support**: Works with local Ollama or cloud APIs (Groq, etc.)
+- **Flexible LLM Support**: Works with local Ollama or cloud APIs (Groq, OpenRouter, etc.)
 - **Realistic Time Management**: Validates schedules against actual available time
 - **Comprehensive Critique**: Identifies potential issues before implementation
 - **Structured Output**: Generates detailed, actionable study plans
+- **Web Demo**: Interactive browser-based demo (no server required)
+- **Full Web App**: Complete Flask application with real AI integration
 
 ## 📦 Installation
 
