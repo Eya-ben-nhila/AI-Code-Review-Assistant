@@ -68,11 +68,10 @@ http://localhost:5000
 
 ## 🚀 Features
 
-- **Multi-Agent Collaboration**: Agents work sequentially to refine and validate plans
+- **Multi-Agent Collaboration**: Agents work sequentially to analyze code
 - **Flexible LLM Support**: Works with local Ollama or cloud APIs (Groq, OpenRouter, etc.)
-- **Realistic Time Management**: Validates schedules against actual available time
-- **Comprehensive Critique**: Identifies potential issues before implementation
-- **Structured Output**: Generates detailed, actionable study plans
+- **Comprehensive Code Analysis**: Explains code, finds bugs, suggests improvements
+- **Beginner-Friendly**: Jargon-free explanations and clear feedback
 - **Web Demo**: Interactive browser-based demo (no server required)
 - **Full Web App**: Complete Flask application with real AI integration
 
@@ -80,8 +79,8 @@ http://localhost:5000
 
 ### 1. Clone and Install Dependencies
 ```bash
-git clone <repository-url>
-cd multi-agent-study-planner
+git clone https://github.com/Eya-ben-nhila/AI-Study-Planner
+cd AI-Study-Planner
 pip install -r requirements.txt
 ```
 
@@ -99,9 +98,9 @@ ollama pull llama3.1:8b
 ollama serve
 ```
 
-#### Option 2: Cloud API (Groq)
+#### Option 2: Cloud API (OpenRouter)
 ```bash
-# Sign up at https://groq.com
+# Sign up at https://openrouter.ai
 # Get your API key and set it in the code
 ```
 
@@ -109,80 +108,70 @@ ollama serve
 
 ### Basic Example
 ```python
-from multi_agent_study_planner import MultiAgentStudyPlanner, OllamaClient
+from multi_agent_code_reviewer import MultiAgentCodeReviewer, OpenRouterClient
 
 # Initialize LLM client
-llm_client = OllamaClient(model_name="llama3.1:8b")
+llm_client = OpenRouterClient(api_key="your-api-key")
 
-# Create planner
-planner = MultiAgentStudyPlanner(llm_client)
+# Create reviewer
+reviewer = MultiAgentCodeReviewer(llm_client)
 
-# Generate study plan
-result = planner.generate_study_plan(
-    learning_goal="Learn Python for Data Science",
-    current_level="Beginner programmer",
-    time_constraint="3 months part-time",
-    available_hours_per_week=15,
-    deadline_weeks=12
-)
+# Review Python code
+code = '''
+def calculate_average(numbers):
+    total = 0
+    for num in numbers:
+        total = total + num
+    average = total / len(numbers)
+    return average
+'''
 
-# Access the validated plan
-plan = result["final_plan"]
-print(f"Plan: {plan.title}")
-print(f"Duration: {plan.total_duration_weeks} weeks")
-print(f"Validation Score: {plan.validation_score}/100")
-```
+result = reviewer.review_code(code, "calculator.py")
 
-### Advanced Usage with User Profile
-```python
-user_profile = {
-    "learning_style": "visual and hands-on",
-    "experience": "some programming in JavaScript",
-    "motivation": "high - career change",
-    "resources": ["laptop", "internet", "online courses"],
-    "preferred_pace": "intensive but sustainable"
-}
-
-result = planner.generate_study_plan(
-    learning_goal="Master Machine Learning",
-    current_level="Intermediate Python developer",
-    time_constraint="6 months full-time",
-    available_hours_per_week=40,
-    deadline_weeks=24,
-    user_profile=user_profile
-)
+# Access the review results
+if result["status"] == "success":
+    review = result["review"]
+    print(f"File: {review.file_name}")
+    print(f"Quality Score: {review.overall_score}/100")
+    print(f"Issues Found: {len(review.issues)}")
+    print(f"Suggestions: {len(review.suggestions)}")
 ```
 
 ## 📊 Output Structure
 
-The system generates comprehensive study plans with:
+The system generates comprehensive code reviews with:
 
 ```python
-StudyPlan(
-    title="Complete Python Data Science Path",
-    description="Comprehensive curriculum from basics to ML",
-    total_duration_weeks=12,
-    topics=[
-        StudyTopic(
-            name="Python Fundamentals",
-            description="Core Python programming concepts",
-            estimated_hours=25.0,
-            prerequisites=[],
-            difficulty_level="beginner"
-        ),
-        # ... more topics
+CodeReviewResult(
+    file_name="calculator.py",
+    code_summary="A function that calculates the average of numbers",
+    explanations=[
+        CodeExplanation(
+            section="calculate_average function",
+            explanation="This function computes the arithmetic mean...",
+            complexity="beginner",
+            key_concepts=["functions", "loops", "arithmetic"]
+        )
     ],
-    weekly_schedule={
-        "week_1": ["Python Fundamentals", "Setup & Environment"],
-        "week_2": ["Data Structures", "Control Flow"],
-        # ... more weeks
-    },
-    daily_hours=2.5,
-    validation_score=87,
-    critic_feedback=[
-        "Consider adding more practice projects",
-        "Schedule looks realistic and achievable"
-    ]
+    issues=[
+        CodeIssue(
+            line_number=5,
+            issue_type="type_error",
+            description="Type conversion issue in string concatenation",
+            severity="medium",
+            suggestion="Use f-string formatting"
+        )
+    ],
+    suggestions=[
+        CodeSuggestion(
+            category="performance",
+            suggestion="Use built-in sum() function",
+            example="total = sum(numbers)",
+            benefit="More efficient and Pythonic"
+        )
+    ],
+    overall_score=85,
+    feedback_summary=["Found 1 issues", "Generated 2 suggestions"]
 )
 ```
 
@@ -198,11 +187,11 @@ llm_client = OllamaClient(
 )
 ```
 
-#### Groq (Cloud)
+#### OpenRouter (Cloud)
 ```python
-llm_client = GroqClient(
-    api_key="your-groq-api-key",
-    model="llama3-70b-8192"
+llm_client = OpenRouterClient(
+    api_key="your-openrouter-api-key",
+    model="meta-llama/llama-3.1-8b-instruct"
 )
 ```
 
@@ -217,12 +206,12 @@ llm_client = GroqClient(
 
 ## 🎭 Agent Collaboration Flow
 
-1. **Curriculum Agent** generates initial learning roadmap
-2. **Time Estimation Agent** validates and adjusts time estimates
-3. **Critic Agent** reviews for realism and feasibility
-4. **System** synthesizes results into final validated plan
+1. **Code Reader Agent** analyzes and explains code structure
+2. **Bug Finder Agent** scans for issues and problems
+3. **Suggestion Agent** proposes improvements and best practices
+4. **System** synthesizes results into comprehensive review
 
-Each agent builds upon the previous agent's work, creating increasingly refined and validated output.
+Each agent builds upon the previous agent's work, creating increasingly detailed and helpful feedback.
 
 ## 🚨 Error Handling
 
@@ -234,22 +223,23 @@ The system includes robust error handling:
 
 ## 🎯 Example Use Cases
 
-- **Career Transition**: "Learn web development for career change"
-- **Skill Enhancement**: "Master advanced Python techniques"
-- **Academic Preparation**: "Prepare for computer science degree"
-- **Hobby Learning**: "Learn game development in spare time"
+- **Learning Python**: Get explanations of code concepts
+- **Code Quality Check**: Find bugs and issues in your code
+- **Best Practices**: Learn Python idioms and improvements
+- **Educational Settings**: Help students understand code better
+- **Code Reviews**: Automated feedback for pull requests
 
 ## 🤝 Contributing
 
 This system demonstrates advanced AI agent architecture. Key areas for enhancement:
-- Additional specialized agents (Resource Agent, Progress Tracker)
-- Integration with learning platforms
-- Visual plan generation
-- Progress monitoring and adaptation
+- Additional specialized agents (Security Agent, Performance Agent)
+- Integration with IDEs and code editors
+- Support for other programming languages
+- Real-time collaborative code reviews
 
 ## 📄 License
 
-MIT License - feel free to use and modify for your learning projects!
+MIT License - feel free to use and modify for your projects!
 
 ---
 

@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Agent Python Code Reviewer Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Courier New', monospace;
+        }
+        .agent-card {
+            transition: all 0.3s ease;
+        }
+        .agent-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-5xl font-bold text-white mb-4 flex items-center justify-center gap-3">
+                <i data-lucide="code-2"></i>
+                Multi-Agent Python Code Reviewer
+            </h1>
+            <p class="text-white/90 text-xl max-w-3xl mx-auto">
+                Experience AI-powered code analysis with three specialized agents working together to review your Python code
+            </p>
+        </header>
+
+        <!-- Agent Overview -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-white text-center mb-8">Meet Your Code Review Agents</h2>
+            <div class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                <!-- Code Reader Agent -->
+                <div class="agent-card glass-effect rounded-2xl p-6 text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="book-open" class="w-8 h-8 text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Code Reader Agent</h3>
+                    <p class="text-gray-600 mb-4">Explains Python code clearly for beginners with simple, jargon-free descriptions</p>
+                    <div class="text-sm text-gray-500">
+                        <div class="flex items-center justify-center gap-2 mb-1">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
+                            <span>Code Explanation</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-2 mb-1">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
+                            <span>Concept Analysis</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-2">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
+                            <span>Complexity Assessment</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bug Finder Agent -->
+                <div class="agent-card glass-effect rounded-2xl p-6 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="bug" class="w-8 h-8 text-red-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Bug Finder Agent</h3>
+                    <p class="text-gray-600 mb-4">Detects syntax errors, logic issues, and common programming mistakes</p>
+                    <div class="text-sm text-gray-500">
+                        <div class="flex items-center justify-center gap-2 mb-1">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-red-500"></i>
+                            <span>Syntax Detection</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-2 mb-1">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-red-500"></i>
+                            <span>Logic Analysis</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-2">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-red-500"></i>
+                            <span>Security Check</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Suggestion Agent -->
+                <div class="agent-card glass-effect rounded-2xl p-6 text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="lightbulb" class="w-8 h-8 text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Suggestion Agent</h3>
+                    <p class="text-gray-600 mb-4">Proposes improvements, best practices, and code optimizations</p>
+                    <div class="text-sm text-gray-500">
+                        <div class="flex items-center justify-center gap-2 mb-1">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-blue-500"></i>
+                            <span>Style Improvements</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-2 mb-1">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-blue-500"></i>
+                            <span>Performance Tips</span>
+                        </div>
+                        <div class="flex items-center justify-center gap-2">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-blue-500"></i>
+                            <span>Best Practices</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Demo -->
+        <section class="mb-12">
+            <div class="glass-effect rounded-2xl p-8 max-w-4xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6 text-center">Try the Interactive Demo</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">File Name</label>
+                        <input type="text" id="fileName" 
+                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="e.g., my_script.py" value="calculator.py">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Python Code</label>
+                        <textarea id="pythonCode" rows="12"
+                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"
+                            placeholder="Paste your Python code here...">def calculate_average(numbers):
+    total = 0
+    for num in numbers:
+        total = total + num
+    average = total / len(numbers)
+    return average
+
+def main():
+    scores = [85, 92, 78, 90, 88]
+    avg = calculate_average(scores)
+    print("Average score is: " + avg)
+    
+main()</textarea>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button onclick="simulateReview()" 
+                            class="bg-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors flex items-center gap-2 mx-auto">
+                            <i data-lucide="search"></i>
+                            Review Code
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workflow Visualization -->
+        <section class="mb-12">
+            <div class="glass-effect rounded-2xl p-8 max-w-6xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6 text-center">Agent Collaboration Workflow</h2>
+                
+                <div class="relative">
+                    <!-- Workflow Steps -->
+                    <div class="grid md:grid-cols-4 gap-6">
+                        <div class="text-center">
+                            <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <span class="text-white font-bold">1</span>
+                            </div>
+                            <h4 class="font-semibold mb-2">Input Code</h4>
+                            <p class="text-sm text-gray-600">Python code submission</p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <span class="text-white font-bold">2</span>
+                            </div>
+                            <h4 class="font-semibold mb-2">Code Reader</h4>
+                            <p class="text-sm text-gray-600">Explains code structure</p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <span class="text-white font-bold">3</span>
+                            </div>
+                            <h4 class="font-semibold mb-2">Bug Finder</h4>
+                            <p class="text-sm text-gray-600">Detects issues</p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <span class="text-white font-bold">4</span>
+                            </div>
+                            <h4 class="font-semibold mb-2">Suggestion</h4>
+                            <p class="text-sm text-gray-600">Proposes improvements</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="resultsSection" class="hidden">
+            <div class="glass-effect rounded-2xl p-8 max-w-6xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6 text-center">Code Review Results</h2>
+                
+                <div id="reviewResults">
+                    <!-- Results will be inserted here -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Sample data for demonstration
+        const sampleReviews = {
+            "calculator.py": {
+                file_name: "calculator.py",
+                code_summary: "A simple Python script that calculates the average of a list of numbers and prints the result.",
+                overall_score: 72,
+                explanations: [
+                    {
+                        section: "calculate_average function",
+                        explanation: "This function takes a list of numbers and calculates their average by summing all elements and dividing by the count.",
+                        complexity: "beginner",
+                        key_concepts: ["functions", "loops", "arithmetic operations"]
+                    },
+                    {
+                        section: "main function",
+                        explanation: "The main function demonstrates the usage of calculate_average with a sample list of scores.",
+                        complexity: "beginner",
+                        key_concepts: ["function calls", "string concatenation"]
+                    }
+                ],
+                issues: [
+                    {
+                        line_number: 9,
+                        issue_type: "type_error",
+                        description: "Attempting to concatenate string with number without type conversion",
+                        severity: "medium",
+                        suggestion: "Convert avg to string using str() function or use f-string formatting"
+                    }
+                ],
+                suggestions: [
+                    {
+                        category: "style",
+                        suggestion: "Use f-string formatting for better readability",
+                        example: 'print(f"Average score is: {avg}")',
+                        benefit: "More readable and Pythonic string formatting"
+                    },
+                    {
+                        category: "performance",
+                        suggestion: "Use built-in sum() function instead of manual loop",
+                        example: "total = sum(numbers)",
+                        benefit: "More efficient and concise code"
+                    }
+                ],
+                feedback_summary: [
+                    "Found 1 issues (0 high, 1 medium)",
+                    "Generated 2 improvement suggestions",
+                    "Code complexity: beginner",
+                    "Overall quality score: 72/100"
+                ]
+            }
+        };
+
+        function simulateReview() {
+            const fileName = document.getElementById('fileName').value;
+            const code = document.getElementById('pythonCode').value;
+            
+            // Show loading animation
+            showLoadingAnimation();
+            
+            // Simulate processing time
+            setTimeout(() => {
+                displayResults(fileName, code);
+            }, 3000);
+        }
+
+        function showLoadingAnimation() {
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.classList.remove('hidden');
+            resultsSection.innerHTML = `
+                <div class="text-center py-12">
+                    <div class="animate-pulse-slow">
+                        <i data-lucide="code-2" class="w-16 h-16 mx-auto mb-4 text-purple-600"></i>
+                        <h3 class="text-xl font-semibold mb-4">Multi-Agent Code Analysis in Progress...</h3>
+                        <div class="space-y-3 text-left max-w-md mx-auto">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                    <i data-lucide="book-open" class="w-4 h-4 text-green-600"></i>
+                                </div>
+                                <span>Code Reader Agent analyzing structure...</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                                    <i data-lucide="bug" class="w-4 h-4 text-red-600"></i>
+                                </div>
+                                <span>Bug Finder Agent scanning for issues...</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <i data-lucide="lightbulb" class="w-4 h-4 text-blue-600"></i>
+                                </div>
+                                <span>Suggestion Agent generating improvements...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function displayResults(fileName, code) {
+            // Generate dynamic review based on code complexity
+            const codeLines = code.split('\n').length;
+            const hasFunctions = code.includes('def ');
+            const hasLoops = code.includes('for ') || code.includes('while ');
+            
+            // Dynamic scoring based on code characteristics
+            let baseScore = 85;
+            if (codeLines > 20) baseScore -= 5;  // Longer code
+            if (!hasFunctions) baseScore -= 10;  // No functions
+            if (code.includes('print(')) baseScore -= 5;  // Debug prints
+            if (code.includes('+ avg')) baseScore -= 10;  // Type error risk
+            
+            const overallScore = Math.max(60, Math.min(95, baseScore + Math.floor(Math.random() * 10) - 5));
+            
+            // Generate dynamic issues
+            const issues = [];
+            if (code.includes('+ avg')) {
+                issues.push({
+                    line_number: 9,
+                    issue_type: "type_error",
+                    description: "Attempting to concatenate string with number without type conversion",
+                    severity: "medium",
+                    suggestion: "Convert avg to string using str() function or use f-string formatting"
+                });
+            }
+            if (code.includes('total = total +')) {
+                issues.push({
+                    line_number: 4,
+                    issue_type: "inefficient_loop",
+                    description: "Using manual accumulation instead of built-in sum() function",
+                    severity: "low",
+                    suggestion: "Replace manual loop with total = sum(numbers) for better performance"
+                });
+            }
+            
+            // Generate dynamic suggestions
+            const suggestions = [
+                {
+                    category: "style",
+                    suggestion: "Use f-string formatting for better readability",
+                    example: 'print(f"Average score is: {avg}")',
+                    benefit: "More readable and Pythonic string formatting"
+                }
+            ];
+            
+            if (code.includes('total = total +')) {
+                suggestions.push({
+                    category: "performance",
+                    suggestion: "Use built-in sum() function instead of manual loop",
+                    example: "total = sum(numbers)",
+                    benefit: "More efficient and concise code"
+                });
+            }
+            
+            const review = {
+                file_name: fileName,
+                code_summary: `A Python script with ${codeLines} lines that ${hasFunctions ? 'uses functions' : 'contains procedural code'}${hasLoops ? ' and loops' : ''}.`,
+                overall_score: overallScore,
+                explanations: [
+                    {
+                        section: hasFunctions ? "Function definitions" : "Main execution",
+                        explanation: hasFunctions ? "The code defines reusable functions for better organization and modularity." : "The code executes sequentially without function definitions.",
+                        complexity: "beginner",
+                        key_concepts: hasFunctions ? ["functions", "parameters", "return values"] : ["sequential execution", "variables"]
+                    }
+                ],
+                issues: issues,
+                suggestions: suggestions,
+                feedback_summary: [
+                    `Found ${issues.length} issues (${issues.filter(i => i.severity === 'high').length} high, ${issues.filter(i => i.severity === 'medium').length} medium)`,
+                    `Generated ${suggestions.length} improvement suggestions`,
+                    `Code complexity: ${overallScore >= 80 ? 'beginner' : overallScore >= 70 ? 'intermediate' : 'needs improvement'}`,
+                    `Overall quality score: ${overallScore}/100`
+                ]
+            };
+
+            const html = `
+                <div class="space-y-6">
+                    <!-- Review Overview -->
+                    <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6">
+                        <h3 class="text-2xl font-bold mb-4">${review.file_name}</h3>
+                        <p class="text-gray-700 mb-4">${review.code_summary}</p>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold ${review.overall_score >= 85 ? 'text-green-600' : review.overall_score >= 70 ? 'text-yellow-600' : 'text-red-600'}">${review.overall_score}/100</div>
+                                <div class="text-sm text-gray-600">Quality Score</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-red-600">${review.issues.length}</div>
+                                <div class="text-sm text-gray-600">Issues Found</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-600">${review.suggestions.length}</div>
+                                <div class="text-sm text-gray-600">Suggestions</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600">${review.explanations.length}</div>
+                                <div class="text-sm text-gray-600">Explanations</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Code Explanations -->
+                    <div>
+                        <h4 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                            <i data-lucide="book-open"></i>
+                            Code Explanations
+                        </h4>
+                        <div class="space-y-3">
+                            ${review.explanations.map((exp, index) => `
+                                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h5 class="font-semibold">${exp.section}</h5>
+                                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">${exp.complexity}</span>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mb-2">${exp.explanation}</p>
+                                    <div class="text-xs text-gray-500">
+                                        <strong>Key Concepts:</strong> ${exp.key_concepts.join(', ')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    ${review.issues.length > 0 ? `
+                    <!-- Issues Found -->
+                    <div>
+                        <h4 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                            <i data-lucide="bug"></i>
+                            Issues Found
+                        </h4>
+                        <div class="space-y-3">
+                            ${review.issues.map(issue => `
+                                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h5 class="font-semibold">Line ${issue.line_number}: ${issue.issue_type}</h5>
+                                        <span class="px-2 py-1 text-xs rounded-full ${
+                                            issue.severity === 'high' ? 'bg-red-100 text-red-800' :
+                                            issue.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                            'bg-green-100 text-green-800'
+                                        }">${issue.severity}</span>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mb-2">${issue.description}</p>
+                                    <div class="text-xs bg-blue-50 p-2 rounded">
+                                        <strong>Fix:</strong> ${issue.suggestion}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Suggestions -->
+                    <div>
+                        <h4 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                            <i data-lucide="lightbulb"></i>
+                            Improvement Suggestions
+                        </h4>
+                        <div class="space-y-3">
+                            ${review.suggestions.map(suggestion => `
+                                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h5 class="font-semibold">${suggestion.category}</h5>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mb-2">${suggestion.suggestion}</p>
+                                    <div class="code-block text-xs p-2 rounded mb-2">
+                                        ${suggestion.example}
+                                    </div>
+                                    <div class="text-xs text-green-600">
+                                        <strong>Benefit:</strong> ${suggestion.benefit}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Agent Status -->
+                    <div>
+                        <h4 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                            <i data-lucide="users"></i>
+                            Agent Collaboration Status
+                        </h4>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="text-center p-3 bg-green-50 rounded-lg">
+                                <i data-lucide="book-open" class="w-8 h-8 mx-auto mb-1 text-green-600"></i>
+                                <div class="text-sm font-medium">Code Reader</div>
+                                <div class="text-xs text-green-600">✅ Complete</div>
+                            </div>
+                            <div class="text-center p-3 bg-red-50 rounded-lg">
+                                <i data-lucide="bug" class="w-8 h-8 mx-auto mb-1 text-red-600"></i>
+                                <div class="text-sm font-medium">Bug Finder</div>
+                                <div class="text-xs text-red-600">✅ Complete</div>
+                            </div>
+                            <div class="text-center p-3 bg-blue-50 rounded-lg">
+                                <i data-lucide="lightbulb" class="w-8 h-8 mx-auto mb-1 text-blue-600"></i>
+                                <div class="text-sm font-medium">Suggestion</div>
+                                <div class="text-xs text-blue-600">✅ Complete</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold mb-2">Review Summary</h4>
+                        <ul class="space-y-1">
+                            ${review.feedback_summary.map(feedback => `
+                                <li class="text-sm flex items-center gap-2">
+                                    <i data-lucide="arrow-right" class="w-3 h-3 text-gray-600"></i>
+                                    ${feedback}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.innerHTML = `
+                <div class="glass-effect rounded-2xl p-8 max-w-6xl mx-auto">
+                    <h2 class="text-2xl font-bold mb-6 text-center">Code Review Results</h2>
+                    ${html}
+                </div>
+            `;
+            
+            // Re-initialize Lucide icons
+            lucide.createIcons();
+            
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
